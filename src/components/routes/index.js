@@ -16,8 +16,8 @@ export default new Router({
         },
         {
             path: '/dashboard',
-            name: 'Dashboard',
-            component: DashBoard,
+            name: 'DashBoardPage',
+            component: DashBoardPage,
         }
     ]
 });
