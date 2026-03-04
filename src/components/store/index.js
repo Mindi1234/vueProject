@@ -11,9 +11,9 @@ export default new Vuex.Store({
             { id: 3, name: "Shira", password: "shira12$" },
         ],
         tasks: [
-        { id: 1, title: "h.w.", description: "do homework in math", status: false },
-        { id: 2, title: "clean", description: "do the dishes", status: false },
-        { id: 3, title: "bake", description: "make chocklete chips cookies", status: false }
+        { id: 1, title: "h.w.", description: "do homework in math", status: false, progress: false },
+        { id: 2, title: "clean", description: "do the dishes", status: false , progress: false},
+        { id: 3, title: "bake", description: "make chocklete chips cookies", status: false, progress: false }
         ],
         currentUser: JSON.parse(localStorage.getItem("currentUser")) || null,
     },
@@ -56,6 +56,16 @@ export default new Vuex.Store({
         },
         getTasks(state) {
             return state.tasks;
+        },
+        doneTasks(state) {
+            return state.tasks.filter(task => task.status === true);
+        },
+        todoTasks(state) {
+            return state.tasks.filter(task => task.status === false 
+                                        && task.progress === false );
+        },
+        inProgressTasks(state) {
+            return state.tasks.filter(task => task.progress === true);
         }
     },
 
