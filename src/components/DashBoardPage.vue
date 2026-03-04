@@ -2,36 +2,59 @@
 <div class="board">
     <div class="colum todo">
         <h2 class="column-header">To Do📝</h2>
+        <draggable  
+        :list="todoTasks"
+        group="tasks"
+        @change="ondragEnd"
+        class="task-list">
         <div v-for="task in todoTasks" :key="task.id" class="card">
         <strong>{{ task.title }}</strong>
         <p>{{ task.description }}</p>
       </div>
+        </draggable>
     </div> 
 
     <div class="colum progress">
         <h2 class="column-header">In Progress⚙️</h2>
+        <draggable
+         :list="inProgressTasks"
+        group="tasks"
+        @change="ondragEnd"
+        class="task-list">
         <div v-for="task in inProgressTasks" :key="task.id" class="card">
         <strong>{{ task.title }}</strong>
         <p>{{ task.description }}</p>
       </div>
+        </draggable>
     </div> 
 
     <div class="colum done">
         <h2 class="column-header">Done✅</h2>
+        <draggable
+            :list="doneTasks"
+            group="tasks"
+            @change="ondragEnd"
+            class="task-list"
+        >
         <div v-for="task in doneTasks" :key="task.id" class="card">
         <strong>{{ task.title }}</strong>
         <p>{{ task.description }}</p>
       </div>
+        </draggable>
     </div> 
 
 </div>
 </template>
 
 <script>
-import { mapGetters  } from 'vuex';
+import { mapGetters,mapMutations } from 'vuex';
+import draggable from 'vuedraggable';
 
 export default {
     name: 'DashBoardPage',
+    components: {
+        draggable,
+    },
 
     computed: {
         ...mapGetters ([
@@ -40,6 +63,17 @@ export default {
             'doneTasks'
             ]),
     },
+
+    methods: {
+        ...mapMutations([
+            'moveTask'
+        ]),
+        ondragEnd(event) {
+            const movedTaskId = event.moved.element.id; 
+            const column = event.to.closest('.column').classList[1];
+            this.moveTask({ taskId: movedTaskId, newStatus:column });
+        }
+    }
 };
 </script>
 

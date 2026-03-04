@@ -11,9 +11,9 @@ export default new Vuex.Store({
             { id: 3, name: "Shira", password: "shira12$" },
         ],
         tasks: [
-        { id: 1, title: "h.w.", description: "do homework in math", status: false, progress: false },
-        { id: 2, title: "clean", description: "do the dishes", status: false , progress: false},
-        { id: 3, title: "bake", description: "make chocklete chips cookies", status: false, progress: false }
+        { id: 1, title: "h.w.", description: "do homework in math", status: 'todo' },
+        { id: 2, title: "clean", description: "do the dishes", status: 'progress'},
+        { id: 3, title: "bake", description: "make chocklete chips cookies", status: 'todo' }
         ],
         currentUser: JSON.parse(localStorage.getItem("currentUser")) || null,
     },
@@ -40,6 +40,13 @@ export default new Vuex.Store({
         },
         setTasks(state, tasks) {
             state.tasks = tasks;
+        },
+
+        moveTask(state, { taskId, newStatus }) {
+            const task = state.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.status = newStatus;
+            }
         }
 
     },
@@ -58,14 +65,13 @@ export default new Vuex.Store({
             return state.tasks;
         },
         doneTasks(state) {
-            return state.tasks.filter(task => task.status === true);
-        },
-        todoTasks(state) {
-            return state.tasks.filter(task => task.status === false 
-                                        && task.progress === false );
+            return state.tasks.filter(task => task.status === 'done');
         },
         inProgressTasks(state) {
-            return state.tasks.filter(task => task.progress === true);
+            return state.tasks.filter(task => task.status === 'progress' );
+        },
+        todoTasks(state) {
+            return state.tasks.filter(task => task.status === 'todo');
         }
     },
 
