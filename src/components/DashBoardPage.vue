@@ -1,46 +1,60 @@
 <template>
 <div class="board">
-    <div class="colum todo">
-        <h2 class="column-header">To Do📝</h2>
+    <div class="column todo">
+        <div class="column-header">
+        <span>To Do</span>
+        <span class="dots">...</span>
+      </div>
         <draggable  
         :list="todoTasks"
         group="tasks"
-        @change="ondragEnd"
-        class="task-list">
+        @change="event => ondragEnd(event, 'todo')"
+        class="task-list"
+        >
         <div v-for="task in todoTasks" :key="task.id" class="card">
         <strong>{{ task.title }}</strong>
-        <p>{{ task.description }}</p>
+        <!-- <p>{{ task.description }}</p> -->
       </div>
         </draggable>
+        <button class="add-task-btn"><span>+</span> Add Task</button>
     </div> 
 
-    <div class="colum progress">
-        <h2 class="column-header">In Progress⚙️</h2>
+    <div class="column progress">
+        <div class="column-header">
+        <span>In Progress</span>
+        <span class="dots">...</span>
+      </div>
         <draggable
          :list="inProgressTasks"
         group="tasks"
-        @change="ondragEnd"
-        class="task-list">
+        @change="event => ondragEnd(event, 'progress')"
+        class="task-list"
+        >
         <div v-for="task in inProgressTasks" :key="task.id" class="card">
         <strong>{{ task.title }}</strong>
-        <p>{{ task.description }}</p>
+        <!-- <p>{{ task.description }}</p> -->
       </div>
         </draggable>
+        <button class="add-task-btn"><span>+</span> Add Task</button>
     </div> 
 
-    <div class="colum done">
-        <h2 class="column-header">Done✅</h2>
+    <div class="column done">
+        <div class="column-header">
+        <span>Done</span>
+        <span class="dots">...</span>
+      </div>
         <draggable
             :list="doneTasks"
             group="tasks"
-            @change="ondragEnd"
+            @change="event => ondragEnd(event, 'done')"
             class="task-list"
         >
         <div v-for="task in doneTasks" :key="task.id" class="card">
         <strong>{{ task.title }}</strong>
-        <p>{{ task.description }}</p>
+        <!-- <p>{{ task.description }}</p> -->
       </div>
         </draggable>
+        <button class="add-task-btn"><span>+</span> Add Task</button>
     </div> 
 
 </div>
@@ -68,11 +82,18 @@ export default {
         ...mapMutations([
             'moveTask'
         ]),
-        ondragEnd(event) {
-            const movedTaskId = event.moved.element.id; 
-            const column = event.to.closest('.column').classList[1];
-            this.moveTask({ taskId: movedTaskId, newStatus:column });
+       ondragEnd(event, newStatus) {
+        if (event.added) {
+          const task = event.added.element;
+          
+          console.log(`Moving task ${task.id} to ${newStatus}`);
+          
+          this.moveTask({ 
+            taskId: task.id, 
+            newStatus: newStatus 
+          });
         }
+      }
     }
 };
 </script>
@@ -81,69 +102,100 @@ export default {
 
 .board {
   display: flex;
-  gap: 20px;
-  padding: 20px;
-  background: #f4f5f7;
-  min-height: 100vh;
+  gap: 25px;
+  padding: 40px;
+  justify-content: center;
+  background-color: #f4f5f7; 
+  min-height: 80vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-
 .column {
-  flex: 1;
-  background: #ebecf0;
-  border-radius: 8px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
+  width: 20%;
+  max-height: 70vh;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+.todo { 
+  background-color: #dce6f2;
+  
+ }     
+.progress { 
+  background-color: #ffebd2; 
+  
+} 
+.done { 
+  background-color: #e2ede4; 
+  
 }
 
 .column-header {
-  font-weight: bold;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  color: #172b4d;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5px 20px 5px;
+  font-weight: 500;
+  color: #44546f;
+  font-size: 16px;
+}
+
+.dots {
+  color: #888;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
 }
 
 .card {
-  background: white;
-  border-radius: 6px;
-  padding: 10px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 2px rgba(9, 30, 66, 0.25);
-  cursor: pointer;
-  transition: box-shadow 0.2s ease, transform 0.1s ease;
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  cursor: grab;
+  transition: transform 0.1s ease;
 }
 
 .card:hover {
-  box-shadow: 0 4px 8px rgba(9, 30, 66, 0.25);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
 }
 
-.card h4 {
-  margin: 0 0 5px;
+.card-title {
   font-size: 14px;
   color: #172b4d;
+  font-weight: 400;
+  display: block;
 }
 
-.card p {
-  margin: 0;
-  font-size: 13px;
-  color: #5e6c84;
+.task-list {
+  flex-grow: 1;
+  min-height: 20px;
+  margin-bottom: 10px;
 }
 
-.todo .column-header {
-  background: #deebff;
-  color: #0747a6;
+.add-task-btn {
+  background: transparent;
+  border: none;
+  color: #44546f;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border-radius: 8px;
+
 }
 
-.progress .column-header {
-  background: #fff0b3;
-  color: #ff8b00;
+.add-task-btn span {
+  font-size: 18px;
 }
 
-.done .column-header {
-  background: #e3fcef;
-  color: #006644;
+.add-task-btn:hover {
+  background-color: rgba(255, 255, 255, 0.4);
 }
 </style>
