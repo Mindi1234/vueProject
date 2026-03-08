@@ -4,7 +4,7 @@ import Vuex from "vuex";
 Vue.use(Vuex);
 
 export default new Vuex.Store({
-<<<<<<< HEAD
+
     state: {
         users: [
             { id: 1, name: "Alice", password: "password1" },
@@ -58,41 +58,40 @@ export default new Vuex.Store({
               state.tasks.splice(index, 1, updatedTask);
               localStorage.setItem("tasks", JSON.stringify(state.tasks));
             }
-          }
+          },
 
-=======
-  state: {
-    users: [
-      { id: 1, name: "Alice", password: "password1" },
-      { id: 2, name: "Eden", password: "1234@" },
-      { id: 3, name: "Shira", password: "shira12$" }
-    ],
-    tasks: [
-      { id: 1, title: "h.w.", description: "do homework in math", status: "todo" },
-      { id: 2, title: "clean", description: "do the dishes", status: "progress" },
-      { id: 3, title: "bake", description: "make chocklete chips cookies", status: "todo" }
-    ],
-    currentUser: JSON.parse(localStorage.getItem("currentUser")) || null
-  },
+//   state: {
+//     users: [
+//       { id: 1, name: "Alice", password: "password1" },
+//       { id: 2, name: "Eden", password: "1234@" },
+//       { id: 3, name: "Shira", password: "shira12$" }
+//     ],
+//     tasks: [
+//       { id: 1, title: "h.w.", description: "do homework in math", status: "todo" },
+//       { id: 2, title: "clean", description: "do the dishes", status: "progress" },
+//       { id: 3, title: "bake", description: "make chocklete chips cookies", status: "todo" }
+//     ],
+//     currentUser: JSON.parse(localStorage.getItem("currentUser")) || null
+//   },
 
-  mutations: {
-    login(state, payload) {
-      const user = state.users.find(
-        (u) => u.name === payload.name && u.password === payload.password
-      );
-      if (user) {
-        state.currentUser = user;
-        localStorage.setItem("currentUser", JSON.stringify(user));
-      } else {
-        alert("Invalid username or password");
-      }
-    },
+//   mutations: {
+//     login(state, payload) {
+//       const user = state.users.find(
+//         (u) => u.name === payload.name && u.password === payload.password
+//       );
+//       if (user) {
+//         state.currentUser = user;
+//         localStorage.setItem("currentUser", JSON.stringify(user));
+//       } else {
+//         alert("Invalid username or password");
+//       }
+//     },
 
-    logout(state) {
-      state.currentUser = null;
-      localStorage.removeItem("currentUser");
->>>>>>> 5682eb57cc3878e83083aa89843d86031b1ee273
-    },
+//     logout(state) {
+//       state.currentUser = null;
+//       localStorage.removeItem("currentUser");
+// >>>>>>> 5682eb57cc3878e83083aa89843d86031b1ee273
+   // },
 
     setUsers(state, users) {
       state.users = users;
@@ -102,7 +101,6 @@ export default new Vuex.Store({
       state.tasks = tasks;
     },
 
-    // ✅ NEW: add task
     addTask(state, task) {
       const maxId = state.tasks.length
         ? Math.max(...state.tasks.map((t) => Number(t.id) || 0))
