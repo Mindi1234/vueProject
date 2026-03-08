@@ -10,7 +10,7 @@ export default new Vuex.Store({
             { id: 2, name: "Eden", password: "1234@" },
             { id: 3, name: "Shira", password: "shira12$" },
         ],
-        tasks: [
+        tasks: JSON.parse(localStorage.getItem("tasks")) ||[
         { id: 1, title: "h.w.", description: "do homework in math", status: 'todo' },
         { id: 2, title: "clean", description: "do the dishes", status: 'progress'},
         { id: 3, title: "bake", description: "make chocklete chips cookies", status: 'todo' }
@@ -40,14 +40,24 @@ export default new Vuex.Store({
         },
         setTasks(state, tasks) {
             state.tasks = tasks;
+            localStorage.setItem("tasks", JSON.stringify(tasks));
         },
 
         moveTask(state, { taskId, newStatus }) {
             const task = state.tasks.find(t => t.id === taskId);
             if (task) {
                 task.status = newStatus;
+                localStorage.setItem("tasks", JSON.stringify(state.tasks));
             }
-        }
+        },
+
+        updateTask(state, updatedTask) {
+            const index = state.tasks.findIndex(t => t.id === updatedTask.id);
+            if (index !== -1) {
+              state.tasks.splice(index, 1, updatedTask);
+              localStorage.setItem("tasks", JSON.stringify(state.tasks));
+            }
+          }
 
     },
 

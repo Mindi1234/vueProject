@@ -11,9 +11,8 @@
         @change="event => ondragEnd(event, 'todo')"
         class="task-list"
         >
-        <div v-for="task in todoTasks" :key="task.id" class="card">
+        <div v-for="task in todoTasks" :key="task.id" @click="openTaskDetails(task)" class="card">
         <strong>{{ task.title }}</strong>
-        <!-- <p>{{ task.description }}</p> -->
       </div>
         </draggable>
         <button class="add-task-btn"><span>+</span> Add Task</button>
@@ -30,9 +29,8 @@
         @change="event => ondragEnd(event, 'progress')"
         class="task-list"
         >
-        <div v-for="task in inProgressTasks" :key="task.id" class="card">
+        <div v-for="task in inProgressTasks" :key="task.id" @click="openTaskDetails(task)" class="card">
         <strong>{{ task.title }}</strong>
-        <!-- <p>{{ task.description }}</p> -->
       </div>
         </draggable>
         <button class="add-task-btn"><span>+</span> Add Task</button>
@@ -49,13 +47,19 @@
             @change="event => ondragEnd(event, 'done')"
             class="task-list"
         >
-        <div v-for="task in doneTasks" :key="task.id" class="card">
+        <div v-for="task in doneTasks" :key="task.id" @click="openTaskDetails(task)" class="card">
         <strong>{{ task.title }}</strong>
-        <!-- <p>{{ task.description }}</p> -->
       </div>
         </draggable>
         <button class="add-task-btn"><span>+</span> Add Task</button>
     </div> 
+
+    <TaskModal
+        v-if="showModal"
+        :task="selectedTask"
+        @close="closeModal"
+        @save="saveTask"
+    />
 
 </div>
 </template>
@@ -63,11 +67,20 @@
 <script>
 import { mapGetters,mapMutations } from 'vuex';
 import draggable from 'vuedraggable';
+import TaskModal from './TaskModeal.vue';
 
 export default {
     name: 'DashBoardPage',
     components: {
         draggable,
+        TaskModal
+    },
+
+    data() {
+        return {
+            selectedTask: null,
+            showModal: false
+        };
     },
 
     computed: {
@@ -80,7 +93,8 @@ export default {
 
     methods: {
         ...mapMutations([
-            'moveTask'
+            'moveTask',
+            'updateTask'
         ]),
        ondragEnd(event, newStatus) {
         if (event.added) {
@@ -93,6 +107,20 @@ export default {
             newStatus: newStatus 
           });
         }
+      },
+
+      openTaskDetails(task) {
+        this.selectedTask = { ...task };
+        this.showModal = true;
+      },
+
+      closeModal() {
+        this.showModal = false;
+      },
+
+      saveTask(updatedTask) {
+        this.updateTask(updatedTask)
+         this.showModal = false;
       }
     }
 };
@@ -115,6 +143,8 @@ export default {
   max-height: 70vh;
   padding: 20px;
   border-radius: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .todo { 
@@ -179,23 +209,25 @@ export default {
   border: none;
   color: #44546f;
   padding: 12px;
-  text-align: left;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  display: flex;
+  display: block;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   width: 100%;
+  margin-top: auto;
   border-radius: 8px;
-
+  transition: background 0.2s;
 }
 
 .add-task-btn span {
   font-size: 18px;
 }
 
-.add-task-btn:hover {
-  background-color: rgba(255, 255, 255, 0.4);
+.add-task-btn[data-v-38e19cba]:hover {
+  background-color: #091e420f;
+  color: #172b4d;
 }
 </style>
