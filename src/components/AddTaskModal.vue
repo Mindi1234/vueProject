@@ -256,7 +256,7 @@ export default {
   border-radius: 12px;
   border: 1px solid #dfe6f5;
   background: #f9fbff;
-  padding: 0 12px;
+  padding: 0 11px;
   font-size: 14px;
   outline: none;
   color: #0f172a;
