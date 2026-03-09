@@ -52,15 +52,22 @@
         <label>Description</label>
         <textarea v-model="editableTask.description"></textarea>
 
-        <div class="row">
-          <div class="field">
-            <label>Assigned To</label>
-            <select v-model="editableTask.assigneeId">
-              <option v-for="u in users" :key="u.id" :value="u.id">
-                {{ u.name }}
-              </option>
-            </select>
-          </div>
+            <div class="row">
+
+                <div class="field">
+                <label>Assigned To</label>
+
+                <select v-model="editableTask.assignedTo">
+
+                    <option 
+                        v-for="user in getUsers"
+                        :key="user.id"
+                        :value="user.name"
+                    >
+                        {{ user.name }}
+                    </option>
+                </select>
+                </div>
 
           <div class="field">
             <label>Status</label>
