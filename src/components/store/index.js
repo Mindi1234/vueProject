@@ -47,16 +47,18 @@ export default new Vuex.Store({
     },
 
     addTask(state, task) {
-      const newTask = {
-        id: Date.now(),
-        title: task.title,
-        description: task.description || "",
-        status: task.status || "todo"
-      };
-
-      state.tasks.push(newTask);
-      localStorage.setItem("tasks", JSON.stringify(state.tasks));
-    },
+        const newTask = {
+          id: task.id || Date.now(),
+          title: task.title,
+          description: task.description || "",
+          status: task.status || "todo",
+          assigneeId: task.assigneeId || "",
+          createdAt: task.createdAt || new Date().toISOString()
+        };
+      
+        state.tasks.push(newTask);
+        localStorage.setItem("tasks", JSON.stringify(state.tasks));
+      },
 
     moveTask(state, { taskId, newStatus }) {
       const task = state.tasks.find((t) => t.id === taskId);

@@ -1,93 +1,76 @@
 <template>
   <div class="overlay" @click.self="onClose">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Add Task">
-      <!-- Header -->
       <div class="modal-header">
-        <button class="icon-btn" type="button" @click="onClose" aria-label="Back">
-          <svg viewBox="0 0 24 24" class="icon">
-            <path
-              d="M15.5 19.5 8 12l7.5-7.5"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-
-        <div class="title">Add Task</div>
+        <div>
+          <p class="modal-eyebrow">Create New</p>
+          <h2 class="title">Add Task</h2>
+        </div>
 
         <button class="icon-btn" type="button" @click="onClose" aria-label="Close">
-          <svg viewBox="0 0 24 24" class="icon">
-            <path
-              d="M6 6l12 12M18 6L6 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.4"
-              stroke-linecap="round"
-            />
-          </svg>
+          ✕
         </button>
       </div>
 
-      <!-- Body -->
       <div class="modal-body">
-        <div class="form-card">
-          <div class="field">
-            <label class="label" for="taskTitle">Task Title</label>
-            <input
-              id="taskTitle"
-              class="input"
-              type="text"
-              placeholder="e.g. Design homepage"
-              v-model.trim="form.title"
-            />
-          </div>
+        <div class="field">
+          <label class="label" for="taskTitle">Task Title</label>
+          <input
+            id="taskTitle"
+            class="input"
+            type="text"
+            placeholder="e.g. Design homepage"
+            v-model.trim="form.title"
+          />
+        </div>
 
-          <div class="field">
-            <label class="label" for="taskDesc">Description</label>
-            <textarea
-              id="taskDesc"
-              class="textarea"
-              rows="3"
-              placeholder="Short description"
-              v-model.trim="form.description"
-            />
-          </div>
+        <div class="field">
+          <label class="label" for="taskDesc">Description</label>
+          <textarea
+            id="taskDesc"
+            class="textarea"
+            rows="4"
+            placeholder="Write short task details"
+            v-model.trim="form.description"
+          />
+        </div>
 
-          <div class="row">
-            <div class="field">
-              <label class="label" for="assignedTo">Assigned To</label>
-              <div class="select">
-                <select id="assignedTo" v-model="form.assigneeId">
-                  <option disabled value="">Select assignee</option>
-                  <option v-for="u in users" :key="u.id" :value="u.id">
-                    {{ u.name }}
-                  </option>
-                </select>
-                <span class="chev">▾</span>
-              </div>
+        <div class="grid">
+          <div class="field">
+            <label class="label" for="assignedTo">Assigned To</label>
+            <div class="select-wrap">
+              <select id="assignedTo" v-model="form.assigneeId" class="select">
+                <option disabled value="">Select assignee</option>
+                <option v-for="u in users" :key="u.id" :value="u.id">
+                  {{ u.name }}
+                </option>
+              </select>
             </div>
+          </div>
 
-            <div class="field">
-              <label class="label" for="status">Status</label>
-              <div class="select">
-                <select id="status" v-model="form.status">
-                  <option value="todo">To Do</option>
-                  <option value="progress">In Progress</option>
-                  <option value="done">Done</option>
-                </select>
-                <span class="chev">▾</span>
-              </div>
+          <div class="field">
+            <label class="label" for="status">Status</label>
+            <div class="select-wrap">
+              <select id="status" v-model="form.status" class="select">
+                <option value="todo">To Do</option>
+                <option value="progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
             </div>
           </div>
         </div>
+
+        <div class="preview-card">
+          <p class="preview-label">Preview</p>
+          <strong>{{ form.title || "Your task title" }}</strong>
+          <p>{{ form.description || "Task description will appear here" }}</p>
+        </div>
       </div>
 
-      <!-- Footer -->
       <div class="modal-footer">
-        <button class="btn btn-ghost" type="button" @click="onClose">Cancel</button>
+        <button class="btn btn-secondary" type="button" @click="onClose">
+          Cancel
+        </button>
         <button class="btn btn-primary" type="button" :disabled="!canSubmit" @click="onSubmit">
           Create Task
         </button>
@@ -100,13 +83,9 @@
 export default {
   name: "AddTaskModal",
   props: {
-    value: { type: Boolean, default: false },
     users: {
       type: Array,
-      default: () => [
-        { id: "mimia", name: "Mimi" },
-        { id: "michal", name: "Michal" }
-      ]
+      default: () => []
     }
   },
   data() {
@@ -114,29 +93,33 @@ export default {
       form: {
         title: "",
         description: "",
-        assigneeId: "mimi",
+        assigneeId: "",
         status: "todo"
       }
     };
+  },
+  mounted() {
+    if (this.users.length > 0) {
+      this.form.assigneeId = this.users[0].id;
+    }
   },
   computed: {
     canSubmit() {
       return (
         this.form.title.length > 0 &&
         this.form.description.length > 0 &&
-        this.form.assigneeId &&
-        this.form.status
+        this.form.assigneeId !== "" &&
+        this.form.status !== ""
       );
     }
   },
   methods: {
     onClose() {
-      this.$emit("input", false);
       this.$emit("close");
     },
     onSubmit() {
       const newTask = {
-        id: String(Date.now()),
+        id: Date.now(),
         title: this.form.title,
         description: this.form.description,
         assigneeId: this.form.assigneeId,
@@ -148,231 +131,192 @@ export default {
 
       this.form.title = "";
       this.form.description = "";
-      this.form.assigneeId = this.users?.[0]?.id || "";
+      this.form.assigneeId = this.users.length ? this.users[0].id : "";
       this.form.status = "todo";
-
-      this.onClose();
     }
   }
 };
 </script>
 
 <style scoped>
-/* Overlay */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, 0.5);
+  background: rgba(15, 23, 42, 0.55);
   display: grid;
   place-items: center;
-  padding: 28px;
+  padding: 24px;
   z-index: 9999;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
 }
 
-/* Modal */
 .modal {
-  width: min(760px, 94vw);
-  border-radius: 18px;
-  background: #ffffff;
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28);
+  width: min(720px, 95vw);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.24);
   overflow: hidden;
-  border: 1px solid #e8ecf5;
+  border: 1px solid #e7edf6;
 }
 
-/* Header */
 .modal-header {
-  display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 14px 16px;
-  background: linear-gradient(180deg, #ffffff 0%, #f6f8ff 100%);
-  border-bottom: 1px solid #e8ecf5;
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid #ebf0f6;
+}
+
+.modal-eyebrow {
+  margin: 0 0 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .title {
-  text-align: center;
-  font-size: 20px;
-  font-weight: 900;
+  margin: 0;
+  font-size: 28px;
   color: #0f172a;
-  letter-spacing: 0.2px;
 }
 
 .icon-btn {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
+  border: none;
   border-radius: 12px;
-  border: 1px solid transparent;
-  background: rgba(37, 99, 235, 0.06);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+  background: #eff4ff;
   color: #1e3a8a;
-  transition: 0.15s ease;
-}
-.icon-btn:hover {
-  background: rgba(37, 99, 235, 0.12);
-  border-color: rgba(37, 99, 235, 0.18);
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.icon {
-  width: 20px;
-  height: 20px;
-}
-
-/* Body */
 .modal-body {
-  padding: 18px 20px 10px;
+  padding: 22px 24px;
 }
 
-/* Inner card */
-.form-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
-  border: 1px solid #eef2ff;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-}
-
-/* Fields */
 .field {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .label {
   display: block;
-  font-size: 12px;
-  font-weight: 900;
-  color: #1f2a44;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #24324a;
   text-align: left;
-  letter-spacing: 0.2px;
 }
 
-.input {
+.input,
+.textarea,
+.select {
   width: 100%;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid #dfe6f5;
-  background: #f9fbff;
-  padding: 0 11px;
-  font-size: 14px;
-  outline: none;
+  box-sizing: border-box;
+  border: 1px solid #dce5f0;
+  border-radius: 14px;
+  background: #f8fbff;
   color: #0f172a;
-  transition: 0.15s ease;
+  font-size: 14px;
+  transition: 0.16s ease;
 }
-.input::placeholder {
-  color: #94a3b8;
-}
-.input:focus {
-  background: #ffffff;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+
+.input,
+.select {
+  height: 46px;
+  padding: 0 14px;
 }
 
 .textarea {
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid #dfe6f5;
-  background: #f9fbff;
-  padding: 10px 12px;
-  font-size: 14px;
-  outline: none;
-  color: #0f172a;
+  padding: 12px 14px;
   resize: none;
-  transition: 0.15s ease;
-}
-.textarea::placeholder {
-  color: #94a3b8;
-}
-.textarea:focus {
-  background: #ffffff;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
-/* Row */
-.row {
-  display: flex;
-  gap: 12px;
-}
-.row .field {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-/* Select */
-.select {
-  position: relative;
-}
-.select select {
-  width: 100%;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid #dfe6f5;
-  background: #f9fbff;
-  padding: 0 40px 0 12px;
-  font-size: 14px;
-  color: #0f172a;
+.input:focus,
+.textarea:focus,
+.select:focus {
   outline: none;
-  appearance: none;
-  transition: 0.15s ease;
-}
-.select select:focus {
-  background: #ffffff;
   border-color: #2563eb;
+  background: #ffffff;
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
-.chev {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #64748b;
-  pointer-events: none;
-  font-size: 16px;
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
-/* Footer */
+.preview-card {
+  margin-top: 10px;
+  border-radius: 18px;
+  padding: 16px;
+  background: linear-gradient(180deg, #eff6ff 0%, #f8fbff 100%);
+  border: 1px solid #dbeafe;
+}
+
+.preview-label {
+  margin: 0 0 8px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.preview-card strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #172033;
+  font-size: 18px;
+}
+
+.preview-card p {
+  margin: 0;
+  color: #5b6578;
+  line-height: 1.5;
+}
+
 .modal-footer {
-  padding: 14px 20px 18px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  border-top: 1px solid #e8ecf5;
-  background: #ffffff;
+  padding: 18px 24px 24px;
+  border-top: 1px solid #ebf0f6;
 }
 
 .btn {
-  height: 42px;
-  min-width: 140px;
-  border-radius: 12px;
+  min-width: 130px;
+  height: 46px;
+  border-radius: 14px;
+  border: none;
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 800;
   cursor: pointer;
-  border: 1px solid transparent;
-  transition: 0.15s ease;
+  transition: 0.16s ease;
 }
 
-.btn-ghost {
-  background: #f1f5f9;
-  color: #0f172a;
-  border-color: #e2e8f0;
+.btn-secondary {
+  background: #eef2f7;
+  color: #1f2937;
 }
-.btn-ghost:hover {
-  background: #eaf0f8;
+
+.btn-secondary:hover {
+  background: #e2e8f0;
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, #2b6bff 0%, #1f5fe6 100%);
-  color: #ffffff;
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+  background: linear-gradient(180deg, #2f6fff 0%, #2458d3 100%);
+  color: white;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.25);
 }
+
 .btn-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.32);
 }
+
 .btn-primary:disabled {
   opacity: 0.55;
   cursor: not-allowed;
