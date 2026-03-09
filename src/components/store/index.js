@@ -11,9 +11,9 @@ export default new Vuex.Store({
             { id: 3, name: "Shira", password: "shira12$" },
         ],
         tasks: JSON.parse(localStorage.getItem("tasks")) ||[
-        { id: 1, title: "h.w.", description: "do homework in math", status: 'todo' },
-        { id: 2, title: "clean", description: "do the dishes", status: 'progress'},
-        { id: 3, title: "bake", description: "make chocklete chips cookies", status: 'todo' }
+        { id: 1, title: "h.w.", description: "do homework in math", status: 'todo', assignedTo: "Alice" },
+        { id: 2, title: "clean", description: "do the dishes", status: 'progress', assignedTo: "Shira"},
+        { id: 3, title: "bake", description: "make chocklete chips cookies", status: 'todo', assignedTo: "Eden" }
         ],
         currentUser: JSON.parse(localStorage.getItem("currentUser")) || null,
     },
@@ -28,7 +28,8 @@ export default new Vuex.Store({
                 state.currentUser = user;
                 localStorage.setItem("currentUser", JSON.stringify(user));
             } else {
-                alert("Invalid username or password");
+                state.currentUser = null;   
+                localStorage.removeItem("currentUser");
             }
         },
             logout(state) {
