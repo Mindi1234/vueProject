@@ -1,6 +1,9 @@
 <template>
     <div class="modal-overlay">
         <div class="modal">
+           <button class="delete-icon" @click="$emit('delete', task.id)">
+            🗑
+           </button>
            <h2 v-if="!isEditing">Task Details</h2>
             <h2 v-else>Edit Task</h2>
             <div v-if="!isEditing">
@@ -20,38 +23,38 @@
             </div>
             <div v-else>
 
-      <label>Title</label>
-      <input v-model="editableTask.title">
+            <label>Title</label>
+            <input v-model="editableTask.title">
 
-      <label>Description</label>
-      <textarea v-model="editableTask.description"></textarea>
+            <label>Description</label>
+            <textarea v-model="editableTask.description"></textarea>
 
-      <div class="row">
+            <div class="row">
 
-        <!-- <div class="field">
-          <label>Assigned To</label>
-          <select>
-            <option>{{ currentUser.name }}</option>
-          </select>
-        </div> -->
+                <!-- <div class="field">
+                <label>Assigned To</label>
+                <select>
+                    <option>{{ currentUser.name }}</option>
+                </select>
+                </div> -->
 
-        <div class="field">
-          <label>Status</label>
-          <select v-model="editableTask.status">
-            <option value="todo">To Do</option>
-            <option value="progress">In Progress</option>
-            <option value="done">Done</option>
-          </select>
-        </div>
+                <div class="field">
+                <label>Status</label>
+                <select v-model="editableTask.status">
+                    <option value="todo">To Do</option>
+                    <option value="progress">In Progress</option>
+                    <option value="done">Done</option>
+                </select>
+                </div>
 
-      </div>
+            </div>
 
-      <div class="buttons">
-        <button class="cancel" @click="cancelEdit">Cancel</button>
-        <button class="save" @click="save">Save Task</button>
-      </div>
+            <div class="buttons">
+                <button class="cancel" @click="cancelEdit">Cancel</button>
+                <button class="save" @click="save">Save Task</button>
+            </div>
 
-    </div>
+            </div>
 
   </div>
 
@@ -87,10 +90,11 @@ export default {
     methods: {
         startEdit() {
             this.isEditing = true;
+            this.editableTask = { ...this.task };
         },
         cancelEdit() {
             this.isEditing = false;
-            this.editableTask = { ...this.task };
+            this.editableTask = {};
         },
         save() {
             this.$emit('save', this.editableTask);
@@ -116,6 +120,7 @@ export default {
 }
 
 .modal{
+    position: relative;
     background: white;
     width: 520px;
     max-width: 90%;
@@ -123,6 +128,23 @@ export default {
     padding: 28px;
     box-shadow: 0 25px 50px rgba(0,0,0,0.18);
     animation: modalOpen 0.18s ease;
+}
+
+.delete-icon{
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: 0.15s;
+}
+
+.delete-icon:hover{
+    color: #ef4444;
+    transform: scale(1.15);
 }
 
 h2{
@@ -153,7 +175,6 @@ select{
     transition: all 0.15s ease;
 }
 
-/* פוקוס */
 input:focus,
 textarea:focus,
 select:focus{
@@ -162,13 +183,11 @@ select:focus{
     background:#eef2ff;
 }
 
-/* textarea */
 textarea{
     min-height:70px;
     resize:none;
 }
 
-/* שורה של Assigned + Status */
 .row{
     display:flex;
     gap:16px;

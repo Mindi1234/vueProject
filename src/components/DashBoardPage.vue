@@ -59,6 +59,7 @@
         :task="selectedTask"
         @close="closeModal"
         @save="saveTask"
+        @delete="deleteTask"
     />
 
 </div>
@@ -94,7 +95,8 @@ export default {
     methods: {
         ...mapMutations([
             'moveTask',
-            'updateTask'
+            'updateTask',
+            'deleteTask'
         ]),
        ondragEnd(event, newStatus) {
         if (event.added) {
@@ -121,6 +123,13 @@ export default {
       saveTask(updatedTask) {
         this.updateTask(updatedTask)
          this.showModal = false;
+      },
+      
+      deleteTask(taskId) {
+          if(confirm("Are you sure you want to delete this task?")) {
+          this.$store.commit("deleteTask", taskId);
+          this.showModal = false;
+        }
       }
     }
 };

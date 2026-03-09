@@ -57,6 +57,11 @@ export default new Vuex.Store({
               state.tasks.splice(index, 1, updatedTask);
               localStorage.setItem("tasks", JSON.stringify(state.tasks));
             }
+          },
+
+          deleteTask(state, taskId) {
+            state.tasks = state.tasks.filter(t => t.id !== taskId);
+            localStorage.setItem("tasks", JSON.stringify(state.tasks));
           }
 
     },
