@@ -43,53 +43,70 @@ export default new Vuex.Store({
             state.tasks = tasks;
             localStorage.setItem("tasks", JSON.stringify(tasks));
         },
-
-        moveTask(state, { taskId, newStatus }) {
-            const task = state.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.status = newStatus;
-                localStorage.setItem("tasks", JSON.stringify(state.tasks));
-            }
-        },
-
-        updateTask(state, updatedTask) {
-            const index = state.tasks.findIndex(t => t.id === updatedTask.id);
-            if (index !== -1) {
-              state.tasks.splice(index, 1, updatedTask);
-              localStorage.setItem("tasks", JSON.stringify(state.tasks));
-            }
+        
+        addTask(state, task) {
+            const newTask = {
+              id: task.id || Date.now(),
+              title: task.title,
+              description: task.description || "",
+              status: task.status || "todo",
+              assigneeId: task.assigneeId || "",
+              createdAt: task.createdAt || new Date().toISOString()
+            };
+          
+            state.tasks.push(newTask);
+            localStorage.setItem("tasks", JSON.stringify(state.tasks));
           },
 
-          deleteTask(state, taskId) {
-            state.tasks = state.tasks.filter(t => t.id !== taskId);
-            localStorage.setItem("tasks", JSON.stringify(state.tasks));
-          }
-
+    moveTask(state, { taskId, newStatus }) {
+      const task = state.tasks.find((t) => t.id === taskId);
+      if (task) {
+        task.status = newStatus;
+        localStorage.setItem("tasks", JSON.stringify(state.tasks));
+      }
     },
 
-   getters: {
-        isLoggedIn(state) {
-            return !!state.currentUser;
-        },
-        currentUser(state) {
-            return state.currentUser;
-        },
-        getUsers(state) {
-            return state.users;
-        },
-        getTasks(state) {
-            return state.tasks;
-        },
-        doneTasks(state) {
-            return state.tasks.filter(task => task.status === 'done');
-        },
-        inProgressTasks(state) {
-            return state.tasks.filter(task => task.status === 'progress' );
-        },
-        todoTasks(state) {
-            return state.tasks.filter(task => task.status === 'todo');
-        }
+    updateTask(state, updatedTask) {
+      const index = state.tasks.findIndex((t) => t.id === updatedTask.id);
+      if (index !== -1) {
+        state.tasks.splice(index, 1, updatedTask);
+        localStorage.setItem("tasks", JSON.stringify(state.tasks));
+      }
     },
 
+    deleteTask(state, taskId) {
+      state.tasks = state.tasks.filter((t) => t.id !== taskId);
+      localStorage.setItem("tasks", JSON.stringify(state.tasks));
+    }
+  },
+
+  getters: {
+    isLoggedIn(state) {
+      return !!state.currentUser;
+    },
+
+    currentUser(state) {
+      return state.currentUser;
+    },
+
+    getUsers(state) {
+      return state.users;
+    },
+
+    getTasks(state) {
+      return state.tasks;
+    },
+
+    doneTasks(state) {
+      return state.tasks.filter((task) => task.status === "done");
+    },
+
+    inProgressTasks(state) {
+      return state.tasks.filter((task) => task.status === "progress");
+    },
+
+    todoTasks(state) {
+      return state.tasks.filter((task) => task.status === "todo");
+    }
+  }
 });
-

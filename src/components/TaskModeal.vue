@@ -1,33 +1,56 @@
 <template>
-    <div class="modal-overlay">
-        <div class="modal">
-           <button class="delete-icon" @click="$emit('delete', task.id)">
-            🗑
-           </button>
-           <h2 v-if="!isEditing">Task Details</h2>
-            <h2 v-else>Edit Task</h2>
-            <div v-if="!isEditing">
+  <div class="overlay" @click.self="$emit('close')">
+    <div class="modal">
+      <button class="delete-icon" @click="$emit('delete', task.id)">🗑</button>
 
-                    <p><strong>Title:</strong> {{ task.title }}</p>
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">{{ isEditing ? "Update Task" : "Task Overview" }}</p>
+          <h2>{{ isEditing ? "Edit Task" : task.title }}</h2>
+        </div>
 
-                    <p><strong>Description:</strong></p>
-                    <p>{{ task.description }}</p>
+        <div class="top-right">
+          <span class="status-pill" :class="task.status">
+            {{ prettyStatus(isEditing ? editableTask.status : task.status) }}
+          </span>
+        </div>
+      </div>
 
-                    <p><strong>Status:</strong> {{ task.status }}</p>
+      <div v-if="!isEditing" class="details">
+        <div class="info-card">
+          <p class="label">Title</p>
+          <p class="value strong">{{ task.title }}</p>
+        </div>
 
-                    <div class="buttons">
-                        <button @click="startEdit">Edit</button>
-                        <button @click="$emit('close')">Close</button>
-                    </div>
+        <div class="info-card">
+          <p class="label">Description</p>
+          <p class="value">{{ task.description || "No description" }}</p>
+        </div>
 
-            </div>
-            <div v-else>
+        <div class="info-grid">
+          <div class="info-card">
+            <p class="label">Status</p>
+            <p class="value">{{ prettyStatus(task.status) }}</p>
+          </div>
 
-            <label>Title</label>
-            <input v-model="editableTask.title">
+          <div class="info-card">
+            <p class="label">Assigned To</p>
+            <p class="value">{{ getUserName(task.assigneeId) }}</p>
+          </div>
+        </div>
 
-            <label>Description</label>
-            <textarea v-model="editableTask.description"></textarea>
+        <div class="buttons">
+          <button class="btn ghost" @click="$emit('close')">Close</button>
+          <button class="btn primary" @click="startEdit">Edit Task</button>
+        </div>
+      </div>
+
+      <div v-else class="edit-form">
+        <label>Title</label>
+        <input v-model="editableTask.title" />
+
+        <label>Description</label>
+        <textarea v-model="editableTask.description"></textarea>
 
             <div class="row">
 
@@ -46,211 +69,303 @@
                 </select>
                 </div>
 
-                <div class="field">
-                <label>Status</label>
-                <select v-model="editableTask.status">
-                    <option value="todo">To Do</option>
-                    <option value="progress">In Progress</option>
-                    <option value="done">Done</option>
-                </select>
-                </div>
+          <div class="field">
+            <label>Status</label>
+            <select v-model="editableTask.status">
+              <option value="todo">To Do</option>
+              <option value="progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+        </div>
 
-            </div>
-
-            <div class="buttons">
-                <button class="cancel" @click="cancelEdit">Cancel</button>
-                <button class="save" @click="save">Save Task</button>
-            </div>
-
-            </div>
-
+        <div class="buttons">
+          <button class="btn ghost" @click="cancelEdit">Cancel</button>
+          <button class="btn primary" @click="save">Save Task</button>
+        </div>
+      </div>
+    </div>
   </div>
-
-</div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
-
 export default {
-    name: 'TaskModal',
-    props: {
-        task: Object,
+  name: "TaskModal",
+  props: {
+    task: {
+      type: Object,
+      required: true
     },
-    data() {
-        return {
-            isEditing: false,
-            editableTask: {},
-        };
+    users: {
+      type: Array,
+      default: () => []
+    }
+  },
+
+  data() {
+    return {
+      isEditing: false,
+      editableTask: {}
+    };
+  },
+
+  watch: {
+    task: {
+      immediate: true,
+      handler(newTask) {
+        this.editableTask = { ...newTask };
+        this.isEditing = false;
+      }
+    }
+  },
+
+  methods: {
+    startEdit() {
+      this.isEditing = true;
+      this.editableTask = { ...this.task };
     },
 
-    computed: {
-        ...mapGetters(['currentUser','getUsers']),
+    cancelEdit() {
+      this.isEditing = false;
+      this.editableTask = { ...this.task };
     },
 
-    watch: {
-        task(newTask) {
-            this.editableTask = { ...newTask };
-            this.isEditing = false;
-        },
+    save() {
+      this.$emit("save", this.editableTask);
+      this.isEditing = false;
     },
 
-    methods: {
-        startEdit() {
-            this.isEditing = true;
-            this.editableTask = { ...this.task };
-        },
-        cancelEdit() {
-            this.isEditing = false;
-            this.editableTask = {};
-        },
-        save() {
-            this.$emit('save', this.editableTask);
-            this.isEditing = false;
-        },
+    getUserName(assigneeId) {
+      const user = this.users.find(u => String(u.id) === String(assigneeId));
+      return user ? user.name : "Unassigned";
     },
+
+    prettyStatus(status) {
+      if (status === "todo") return "To Do";
+      if (status === "progress") return "In Progress";
+      if (status === "done") return "Done";
+      return status;
+    }
+  }
 };
 </script>
 
 <style scoped>
-
-.modal-overlay{
-    position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: rgba(0,0,0,0.45);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    backdrop-filter: blur(3px);
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 9999;
+  backdrop-filter: blur(8px);
 }
 
-.modal{
-    position: relative;
-    background: white;
-    width: 520px;
-    max-width: 90%;
-    border-radius: 14px;
-    padding: 28px;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.18);
-    animation: modalOpen 0.18s ease;
+.modal {
+  position: relative;
+  width: 640px;
+  max-width: 95%;
+  border-radius: 24px;
+  padding: 26px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.22);
+  border: 1px solid #e8edf5;
 }
 
-.delete-icon{
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: transparent;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #9ca3af;
-    transition: 0.15s;
+.delete-icon {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: #fff1f2;
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.16s ease;
 }
 
-.delete-icon:hover{
-    color: #ef4444;
-    transform: scale(1.15);
+.delete-icon:hover {
+  transform: scale(1.05);
+  background: #ffe4e6;
 }
 
-h2{
-    text-align:center;
-    margin-bottom:20px;
-    font-weight:600;
-    color:#1f2937;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
-label{
-    display:block;
-    margin-top:14px;
-    font-size:13px;
-    font-weight:600;
-    color:#4b5563;
+.eyebrow {
+  margin: 0 0 6px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 28px;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status-pill.todo {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-pill.progress {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.status-pill.done {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.details,
+.edit-form {
+  margin-top: 8px;
+}
+
+.info-card {
+  background: #f8fbff;
+  border: 1px solid #e7edf6;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.label {
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.value {
+  margin: 0;
+  color: #334155;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.strong {
+  font-size: 18px;
+  font-weight: 800;
+  color: #172033;
+}
+
+label {
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #334155;
+  text-align: left;
 }
 
 input,
 textarea,
-select{
-    width:100%;
-    padding:11px 12px;
-    border-radius:8px;
-    border:1px solid #d1d5db;
-    background:#f3f4f6;
-    margin-top:6px;
-    font-size:14px;
-    transition: all 0.15s ease;
+select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dbe3ee;
+  border-radius: 14px;
+  background: #f8fbff;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #172033;
+  transition: 0.15s ease;
 }
 
 input:focus,
 textarea:focus,
-select:focus{
-    outline:none;
-    border-color:#4c7cf3;
-    background:#eef2ff;
+select:focus {
+  outline: none;
+  border-color: #2563eb;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
-textarea{
-    min-height:70px;
-    resize:none;
+textarea {
+  min-height: 100px;
+  resize: none;
 }
 
-.row{
-    display:flex;
-    gap:16px;
-    margin-top:6px;
+.row {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
 }
 
-.field{
-    flex:1;
+.field {
+  flex: 1;
 }
 
-/* כפתורים */
-.buttons{
-    display:flex;
-    justify-content:flex-end;
-    gap:10px;
-    margin-top:26px;
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
 }
 
-button{
-    padding:9px 18px;
-    border:none;
-    border-radius:8px;
-    font-size:14px;
-    cursor:pointer;
-    transition:0.15s;
+.btn {
+  min-width: 130px;
+  height: 46px;
+  border: none;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.16s ease;
 }
 
-/* כפתור שמירה */
-.save{
-    background:#4c7cf3;
-    color:white;
+.btn.ghost {
+  background: #eef2f7;
+  color: #1f2937;
 }
 
-.save:hover{
-    background:#3b67d8;
+.btn.ghost:hover {
+  background: #e2e8f0;
 }
 
-.cancel{
-    background:#e5e7eb;
-    color:#374151;
+.btn.primary {
+  background: linear-gradient(180deg, #2f6fff 0%, #2458d3 100%);
+  color: white;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.24);
 }
 
-.cancel:hover{
-    background:#d1d5db;
+.btn.primary:hover {
+  transform: translateY(-1px);
 }
-
-@keyframes modalOpen{
-    from{
-        transform: scale(0.92);
-        opacity:0;
-    }
-    to{
-        transform: scale(1);
-        opacity:1;
-    }
-}
-
 </style>
