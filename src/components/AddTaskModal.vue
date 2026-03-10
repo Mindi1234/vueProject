@@ -41,7 +41,7 @@
             <div class="select-wrap">
               <select id="assignedTo" v-model="form.assignedTo" class="select">
                 <option disabled value="">Select assignee</option>
-                <option v-for="u in users" :key="u.id" :value="u.id">
+                <option v-for="u in users" :key="u.id" :value="u.name">
                   {{ u.name }}
                 </option>
               </select>
@@ -100,7 +100,7 @@ export default {
   },
   mounted() {
     if (this.users.length > 0) {
-      this.form.assigneeId = this.users[0].id;
+      this.form.assignedTo = this.users[0].id;
     }
   },
   computed: {
@@ -108,7 +108,7 @@ export default {
       return (
         this.form.title.length > 0 &&
         this.form.description.length > 0 &&
-        this.form.assigneeId !== "" &&
+        this.form.assignedTo !== "" &&
         this.form.status !== ""
       );
     }

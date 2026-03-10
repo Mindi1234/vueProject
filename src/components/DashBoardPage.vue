@@ -104,8 +104,8 @@
 
             <div class="card-footer">
               <div class="assignee">
-                <div class="avatar">{{ getUserInitials(task.assigneeId) }}</div>
-                <span>{{ getUserName(task.assigneeId) }}</span>
+                <div class="avatar">{{ task.assignedTo.charAt(0) }}</div>
+                <span>{{ task.assignedTo }}</span>
               </div>
             </div>
           </div>
@@ -120,7 +120,6 @@
         </button>
       </div>
 
-      <!-- DONE -->
       <div class="column done">
         <div class="column-header">
           <div class="column-title-wrap">
@@ -152,8 +151,8 @@
 
             <div class="card-footer">
               <div class="assignee">
-                <div class="avatar">{{ getUserInitials(task.assigneeId) }}</div>
-                <span>{{ getUserName(task.assigneeId) }}</span>
+                <div class="avatar">{{ task.assignedTo.charAt(0) }}</div>
+                <span>{{ task.assignedTo }}</span>
               </div>
             </div>
           </div>
@@ -270,21 +269,21 @@ export default {
       this.showAddModal = false;
     },
 
-    getUserName(assigneeId) {
-      const user = this.getUsers.find(u => String(u.id) === String(assigneeId));
-      return user ? user.name : "Unassigned";
-    },
+    // getUserName(assigneeId) {
+    //   const user = this.getUsers.find(u => String(u.id) === String(assigneeId));
+    //   return user ? user.name : "Unassigned";
+    // },
 
-    getUserInitials(assigneeId) {
-      const name = this.getUserName(assigneeId);
-      if (!name || name === "Unassigned") return "?";
-      return name
-        .split(" ")
-        .map(part => part[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase();
-    },
+    // getUserInitials(assigneeId) {
+    //   const name = this.getUserName(assigneeId);
+    //   if (!name || name === "Unassigned") return "?";
+    //   return name
+    //     .split(" ")
+    //     .map(part => part[0])
+    //     .join("")
+    //     .slice(0, 2)
+    //     .toUpperCase();
+    // },
 
     shortText(text) {
       if (!text) return "No description";
