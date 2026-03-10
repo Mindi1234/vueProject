@@ -35,7 +35,7 @@
 
           <div class="info-card">
             <p class="label">Assigned To</p>
-            <p class="value">{{ getUserName(task.assigneeId) }}</p>
+            <p class="value">{{ task.assignedTo }}</p>
           </div>
         </div>
 
@@ -89,6 +89,8 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
 export default {
   name: "TaskModal",
   props: {
@@ -119,6 +121,10 @@ export default {
     }
   },
 
+  computed: {
+    ...mapGetters(["getUsers"])
+  },
+
   methods: {
     startEdit() {
       this.isEditing = true;
@@ -135,10 +141,10 @@ export default {
       this.isEditing = false;
     },
 
-    getUserName(assigneeId) {
-      const user = this.users.find(u => String(u.id) === String(assigneeId));
-      return user ? user.name : "Unassigned";
-    },
+    // getUserName(assigneeId) {
+    //   const user = this.users.find(u => String(u.id) === String(assigneeId));
+    //   return user ? user.name : "Unassigned";
+    // },
 
     prettyStatus(status) {
       if (status === "todo") return "To Do";
@@ -222,10 +228,11 @@ h2 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  padding: 8px 20px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
+  margin-right: 45px;
 }
 
 .status-pill.todo {
@@ -291,7 +298,7 @@ label {
   font-size: 13px;
   font-weight: 800;
   color: #334155;
-  text-align: left;
+  text-align: center;
 }
 
 input,

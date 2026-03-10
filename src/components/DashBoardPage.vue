@@ -56,8 +56,8 @@
 
             <div class="card-footer">
               <div class="assignee">
-                <div class="avatar">{{ getUserInitials(task.assigneeId) }}</div>
-                <span>{{ getUserName(task.assigneeId) }}</span>
+                <div class="avatar">{{ task.assignedTo.charAt(0) }}</div>
+                <span>{{ task.assignedTo }}</span>
               </div>
             </div>
           </div>
@@ -72,7 +72,7 @@
         </button>
       </div>
 
-      <!-- PROGRESS -->
+    
       <div class="column progress">
         <div class="column-header">
           <div class="column-title-wrap">

@@ -50,7 +50,7 @@ export default new Vuex.Store({
               title: task.title,
               description: task.description || "",
               status: task.status || "todo",
-              assigneeId: task.assigneeId || "",
+              assignedTo: task.assignedTo || "",
               createdAt: task.createdAt || new Date().toISOString()
             };
           
