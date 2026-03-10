@@ -39,7 +39,7 @@
           <div class="field">
             <label class="label" for="assignedTo">Assigned To</label>
             <div class="select-wrap">
-              <select id="assignedTo" v-model="form.assigneeId" class="select">
+              <select id="assignedTo" v-model="form.assignedTo" class="select">
                 <option disabled value="">Select assignee</option>
                 <option v-for="u in users" :key="u.id" :value="u.id">
                   {{ u.name }}
@@ -93,7 +93,7 @@ export default {
       form: {
         title: "",
         description: "",
-        assigneeId: "",
+        assignedTo: "",
         status: "todo"
       }
     };
@@ -122,7 +122,7 @@ export default {
         id: Date.now(),
         title: this.form.title,
         description: this.form.description,
-        assigneeId: this.form.assigneeId,
+        assignedTo: this.form.assignedTo,
         status: this.form.status,
         createdAt: new Date().toISOString()
       };
@@ -131,7 +131,7 @@ export default {
 
       this.form.title = "";
       this.form.description = "";
-      this.form.assigneeId = this.users.length ? this.users[0].id : "";
+      this.form.assignedTo = this.users.length ? this.users[0].id : "";
       this.form.status = "todo";
     }
   }
