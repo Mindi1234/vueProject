@@ -30,7 +30,7 @@
 
         <div class="card-footer">
           <div class="assignee">
-            <div class="avatar">{{ getAssignedInitial(task.assignedTo) }}</div>
+            <div class="avatar">{{ getInitial(task.assignedTo) }}</div>
             <span>{{ task.assignedTo || "Unknown" }}</span>
           </div>
         </div>
@@ -49,6 +49,7 @@
 
 <script>
 import draggable from "vuedraggable";
+import { shortText, formatDate, getInitial } from "../utils/helpers";
 
 export default {
   name: "TaskColumn",
@@ -78,21 +79,9 @@ export default {
     }
   },
   methods: {
-    shortText(text) {
-      if (!text) return "No description";
-      return text.length > 60 ? text.slice(0, 60) + "..." : text;
-    },
-
-    formatDate(date) {
-      if (!date) return "Today";
-      const d = new Date(date);
-      return d.toLocaleDateString("en-GB");
-    },
-
-    getAssignedInitial(name) {
-      if (!name) return "?";
-      return name.charAt(0).toUpperCase();
-    }
+    shortText,
+    formatDate,
+    getInitial
   }
 };
 </script>
@@ -163,6 +152,7 @@ export default {
   padding-right: 4px;
   margin-bottom: 0.75rem;
 }
+
 .card {
   background: rgba(255, 255, 255, 0.92);
   border-radius: 1.125rem;
@@ -295,12 +285,13 @@ export default {
   font-size: 1.125rem;
   margin-right: 0.375rem;
 }
+
 .task-list::-webkit-scrollbar {
   width: 6px;
 }
 
 .task-list::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.15);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 10px;
 }
 </style>
