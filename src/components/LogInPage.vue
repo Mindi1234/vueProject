@@ -73,7 +73,6 @@ export default {
             );
 
               if (user) {
-                this.$store.commit("login", user);
                 localStorage.setItem("currentUser", JSON.stringify(user));
                 this.$router.push('/dashboard');
               } else {
