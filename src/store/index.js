@@ -19,29 +19,14 @@ export default new Vuex.Store({
     },
 
     mutations: {
-        login(state, payload) {
-            const user = state.users.find(
-                (u) => u.name === payload.name &&
-                u.password === payload.password
-            );
-            if (user) {
-                state.currentUser = user;
-                localStorage.setItem("currentUser", JSON.stringify(user));
-            } else {
-                state.currentUser = null;   
-                localStorage.removeItem("currentUser");
-            }
+        login(state, user) {
+          state.currentUser = user;
         },
-            logout(state) {
-                state.currentUser = null;
-                localStorage.removeItem("currentUser");
-            },
         setUsers(state, users) {
             state.users = users;
         },
         setTasks(state, tasks) {
             state.tasks = tasks;
-            localStorage.setItem("tasks", JSON.stringify(tasks));
         },
         
         addTask(state, task) {
@@ -55,14 +40,12 @@ export default new Vuex.Store({
             };
           
             state.tasks.push(newTask);
-            localStorage.setItem("tasks", JSON.stringify(state.tasks));
           },
 
     moveTask(state, { taskId, newStatus }) {
       const task = state.tasks.find((t) => t.id === taskId);
       if (task) {
         task.status = newStatus;
-        localStorage.setItem("tasks", JSON.stringify(state.tasks));
       }
     },
 
@@ -70,13 +53,11 @@ export default new Vuex.Store({
       const index = state.tasks.findIndex((t) => t.id === updatedTask.id);
       if (index !== -1) {
         state.tasks.splice(index, 1, updatedTask);
-        localStorage.setItem("tasks", JSON.stringify(state.tasks));
       }
     },
 
     deleteTask(state, taskId) {
       state.tasks = state.tasks.filter((t) => t.id !== taskId);
-      localStorage.setItem("tasks", JSON.stringify(state.tasks));
     }
   },
 
