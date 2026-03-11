@@ -133,6 +133,9 @@ export default {
           taskId: task.id,
           newStatus: newStatus
         });
+          localStorage.setItem(
+            "tasks",
+            JSON.stringify(this.$store.state.tasks));
       }
     },
 
@@ -148,11 +151,17 @@ export default {
 
     saveTask(updatedTask) {
       this.updateTask(updatedTask);
+      localStorage.setItem(
+        "tasks",
+        JSON.stringify(this.$store.state.tasks));
       this.showModal = false;
     },
 
     deleteTask(taskId) {
       this.taskToDeleteId = taskId;
+       localStorage.setItem(
+        "tasks",
+        JSON.stringify(this.$store.state.tasks));
       this.showDeleteConfirm = true;
     },
 
@@ -177,6 +186,9 @@ export default {
     createTask(task) {
       task.status = this.newTaskStatus;
       this.addTask(task);
+        localStorage.setItem(
+          "tasks",
+          JSON.stringify(this.$store.state.tasks));
       this.showAddModal = false;
     }
   }
