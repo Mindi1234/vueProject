@@ -52,8 +52,9 @@
       />
     </div>
 
-    <TaskModal
+    <TaskFormModal
       v-if="showModal"
+      mode="edit"
       :task="selectedTask"
       :users="getUsers"
       @close="closeModal"
@@ -61,11 +62,12 @@
       @delete="deleteTask"
     />
 
-    <AddTaskModal
+    <TaskFormModal
       v-if="showAddModal"
+      mode="create"
       :users="getUsers"
       @close="showAddModal = false"
-      @create="createTask"
+      @save="createTask"
     />
 
     <BaseConfirmModal
@@ -82,19 +84,17 @@
 
 <script>
 import { mapGetters, mapMutations } from "vuex";
-import TaskModal from "./TaskModeal.vue";
-import AddTaskModal from "./AddTaskModal.vue";
 import TaskColumn from "./TaskColumn.vue";
 import BaseConfirmModal from "./BaseConfirmModal.vue";
+import TaskFormModal from "./TaskFormModal.vue";
 import { TASK_STATUS } from "../constants/taskStatus";
 
 export default {
   name: "DashBoardPage",
   components: {
-    TaskModal,
-    AddTaskModal,
     TaskColumn,
-    BaseConfirmModal
+    BaseConfirmModal,
+    TaskFormModal
   },
 
   data() {
@@ -161,6 +161,7 @@ export default {
       this.showDeleteConfirm = false;
       this.showModal = false;
       this.taskToDeleteId = null;
+      this.selectedTask = null;
     },
 
     closeDeleteConfirm() {
