@@ -26,7 +26,7 @@
     <div class="board">
       <TaskColumn
         title="To Do"
-        status="todo"
+        :status="TASK_STATUS.TODO"
         :tasks="todoTasks"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
@@ -35,7 +35,7 @@
 
       <TaskColumn
         title="In Progress"
-        status="progress"
+        :status="TASK_STATUS.PROGRESS"
         :tasks="inProgressTasks"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
@@ -44,7 +44,7 @@
 
       <TaskColumn
         title="Done"
-        status="done"
+        :status="TASK_STATUS.DONE"
         :tasks="doneTasks"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
@@ -75,6 +75,7 @@ import { mapGetters, mapMutations } from "vuex";
 import TaskModal from "./TaskModeal.vue";
 import AddTaskModal from "./AddTaskModal.vue";
 import TaskColumn from "./TaskColumn.vue";
+import { TASK_STATUS } from "../constants/taskStatus";
 
 export default {
   name: "DashBoardPage",
@@ -86,10 +87,11 @@ export default {
 
   data() {
     return {
+      TASK_STATUS,
       selectedTask: null,
       showModal: false,
       showAddModal: false,
-      newTaskStatus: "todo"
+      newTaskStatus: TASK_STATUS.TODO
     };
   },
 
