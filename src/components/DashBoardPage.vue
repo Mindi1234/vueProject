@@ -24,7 +24,7 @@
     </div>
 
     <div class="board">
-      <!-- TODO -->
+
       <div class="column todo">
         <div class="column-header">
           <div class="column-title-wrap">
