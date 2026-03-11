@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
+import { mapGetters } from "vuex";
 import TaskColumn from "./TaskColumn.vue";
 import BaseConfirmModal from "./BaseConfirmModal.vue";
 import TaskFormModal from "./TaskFormModal.vue";
@@ -119,20 +119,18 @@ export default {
   },
 
   methods: {
-    ...mapMutations([
-      "moveTask",
-      "updateTask",
-      "deleteTask",
-      "addTask"
-    ]),
 
     ondragEnd(event, newStatus) {
       if (event.added) {
         const task = event.added.element;
-        this.moveTask({
-          taskId: task.id,
-          newStatus: newStatus
-        });
+
+      const tasks = [...this.$store.state.tasks];
+      const taskForMove = tasks.find((t) => t.id === task.id);
+      if (taskForMove) {
+        taskForMove.status = newStatus;
+      }
+      this.$store.commit("setTasks", tasks);
+
           localStorage.setItem(
             "tasks",
             JSON.stringify(this.$store.state.tasks));
@@ -150,23 +148,30 @@ export default {
     },
 
     saveTask(updatedTask) {
-      this.updateTask(updatedTask);
-      localStorage.setItem(
-        "tasks",
-        JSON.stringify(this.$store.state.tasks));
-      this.showModal = false;
+        const tasks = [...this.$store.state.tasks];
+
+          const index = tasks.findIndex(t => t.id === updatedTask.id);
+          if (index !== -1) {
+            tasks.splice(index, 1, updatedTask);
+          }
+          this.$store.commit("setTasks", tasks);
+          localStorage.setItem("tasks", JSON.stringify(tasks));
+          this.showModal = false;
     },
 
     deleteTask(taskId) {
-      this.taskToDeleteId = taskId;
+       const tasks = this.$store.state.tasks.filter(
+          task => task.id !== taskId);
+       this.$store.commit("setTasks", tasks);
        localStorage.setItem(
         "tasks",
-        JSON.stringify(this.$store.state.tasks));
+        JSON.stringify(tasks));
+
       this.showDeleteConfirm = true;
     },
 
     confirmDeleteTask() {
-      this.$store.commit("deleteTask", this.taskToDeleteId);
+      this.deleteTask(this.taskToDeleteId);
       this.showDeleteConfirm = false;
       this.showModal = false;
       this.taskToDeleteId = null;
@@ -184,12 +189,22 @@ export default {
     },
 
     createTask(task) {
-      task.status = this.newTaskStatus;
-      this.addTask(task);
-        localStorage.setItem(
-          "tasks",
-          JSON.stringify(this.$store.state.tasks));
-      this.showAddModal = false;
+       task.status = this.newTaskStatus;
+
+        const newTask = {
+          id: Date.now(),
+          title: task.title,
+          description: task.description || "",
+          status: task.status,
+          assignedTo: task.assignedTo || "",
+          createdAt: new Date().toISOString()
+        };
+
+        const tasks = [...this.$store.state.tasks, newTask];
+        this.$store.commit("setTasks", tasks);
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+
+        this.showAddModal = false;
     }
   }
 };
