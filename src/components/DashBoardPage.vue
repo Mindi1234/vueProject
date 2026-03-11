@@ -67,6 +67,16 @@
       @close="showAddModal = false"
       @create="createTask"
     />
+
+    <BaseConfirmModal
+      v-if="showDeleteConfirm"
+      title="Delete Task"
+      message="Are you sure you want to delete this task?"
+      confirmText="Delete"
+      cancelText="Cancel"
+      @confirm="confirmDeleteTask"
+      @close="closeDeleteConfirm"
+    />
   </div>
 </template>
 
@@ -75,6 +85,7 @@ import { mapGetters, mapMutations } from "vuex";
 import TaskModal from "./TaskModeal.vue";
 import AddTaskModal from "./AddTaskModal.vue";
 import TaskColumn from "./TaskColumn.vue";
+import BaseConfirmModal from "./BaseConfirmModal.vue";
 import { TASK_STATUS } from "../constants/taskStatus";
 
 export default {
@@ -82,7 +93,8 @@ export default {
   components: {
     TaskModal,
     AddTaskModal,
-    TaskColumn
+    TaskColumn,
+    BaseConfirmModal
   },
 
   data() {
@@ -91,6 +103,8 @@ export default {
       selectedTask: null,
       showModal: false,
       showAddModal: false,
+      showDeleteConfirm: false,
+      taskToDeleteId: null,
       newTaskStatus: TASK_STATUS.TODO
     };
   },
@@ -138,10 +152,20 @@ export default {
     },
 
     deleteTask(taskId) {
-      if (confirm("Are you sure you want to delete this task?")) {
-        this.$store.commit("deleteTask", taskId);
-        this.showModal = false;
-      }
+      this.taskToDeleteId = taskId;
+      this.showDeleteConfirm = true;
+    },
+
+    confirmDeleteTask() {
+      this.$store.commit("deleteTask", this.taskToDeleteId);
+      this.showDeleteConfirm = false;
+      this.showModal = false;
+      this.taskToDeleteId = null;
+    },
+
+    closeDeleteConfirm() {
+      this.showDeleteConfirm = false;
+      this.taskToDeleteId = null;
     },
 
     openAddTaskModal(status) {
