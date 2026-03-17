@@ -11,6 +11,7 @@
     <draggable
       :list="tasks"
       group="tasks"
+      :disabled="!isAdmin"
       @change="event => $emit('drag-change', event, status)"
       class="task-list"
     >
@@ -41,7 +42,12 @@
       </div>
     </draggable>
 
-    <button class="add-task-btn" @click="$emit('add-task', status)">
+    <!-- 🔐 רק אדמין רואה -->
+    <button
+      v-if="isAdmin"
+      class="add-task-btn"
+      @click="$emit('add-task', status)"
+    >
       <span>＋</span> Add Task
     </button>
   </div>
@@ -53,9 +59,11 @@ import { shortText, formatDate, getInitial } from "../utils/helpers";
 
 export default {
   name: "TaskColumn",
+
   components: {
     draggable
   },
+
   props: {
     title: {
       type: String,
@@ -68,8 +76,14 @@ export default {
     tasks: {
       type: Array,
       default: () => []
+    },
+    // 👇 חדש
+    isAdmin: {
+      type: Boolean,
+      default: false
     }
   },
+
   computed: {
     pillClass() {
       if (this.status === "todo") return "todo-pill";
@@ -78,6 +92,7 @@ export default {
       return "";
     }
   },
+
   methods: {
     shortText,
     formatDate,

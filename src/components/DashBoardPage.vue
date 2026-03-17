@@ -28,6 +28,7 @@
         title="To Do"
         :status="TASK_STATUS.TODO"
         :tasks="todoTasks"
+        :isAdmin="isAdmin"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
         @add-task="openAddTaskModal"
@@ -37,6 +38,7 @@
         title="In Progress"
         :status="TASK_STATUS.PROGRESS"
         :tasks="inProgressTasks"
+        :isAdmin="isAdmin"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
         @add-task="openAddTaskModal"
@@ -46,30 +48,36 @@
         title="Done"
         :status="TASK_STATUS.DONE"
         :tasks="doneTasks"
+        :isAdmin="isAdmin"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
         @add-task="openAddTaskModal"
       />
     </div>
 
+    <!-- עריכת משימה -->
     <TaskFormModal
       v-if="showModal"
       mode="edit"
       :task="selectedTask"
       :users="getUsers"
+      :isAdmin="isAdmin"
       @close="closeModal"
       @save="saveTask"
       @delete="deleteTask"
     />
 
+    <!-- יצירת משימה -->
     <TaskFormModal
       v-if="showAddModal"
       mode="create"
       :users="getUsers"
+      :isAdmin="isAdmin"
       @close="showAddModal = false"
       @save="createTask"
     />
 
+    <!-- מחיקה -->
     <BaseConfirmModal
       v-if="showDeleteConfirm"
       title="Delete Task"
@@ -91,6 +99,7 @@ import { TASK_STATUS } from "../constants/taskStatus";
 
 export default {
   name: "DashBoardPage",
+
   components: {
     TaskColumn,
     BaseConfirmModal,
@@ -114,8 +123,13 @@ export default {
       "todoTasks",
       "inProgressTasks",
       "doneTasks",
-      "getUsers"
-    ])
+      "getUsers",
+      "currentUser"
+    ]),
+
+    isAdmin() {
+      return this.currentUser?.role === "admin";
+    }
   },
 
   methods: {
@@ -126,17 +140,25 @@ export default {
       "addTask"
     ]),
 
+    // 🔐 רק אדמין יכול לגרור
     ondragEnd(event, newStatus) {
+      if (!this.isAdmin) return;
+
       if (event.added) {
         const task = event.added.element;
         this.moveTask({
           taskId: task.id,
-          newStatus: newStatus
+          newStatus
         });
       }
     },
 
+    // 🔐 רק אדמין או בעל המשימה
     openTaskDetails(task) {
+      if (!this.isAdmin && task.assignedTo !== this.currentUser.id) {
+        return;
+      }
+
       this.selectedTask = { ...task };
       this.showModal = true;
     },
@@ -147,11 +169,18 @@ export default {
     },
 
     saveTask(updatedTask) {
+      if (!this.isAdmin && updatedTask.assignedTo !== this.currentUser.id) {
+        return;
+      }
+
       this.updateTask(updatedTask);
       this.showModal = false;
     },
 
+    // 🔐 רק אדמין מוחק
     deleteTask(taskId) {
+      if (!this.isAdmin) return;
+
       this.taskToDeleteId = taskId;
       this.showDeleteConfirm = true;
     },
@@ -169,12 +198,17 @@ export default {
       this.taskToDeleteId = null;
     },
 
+    // 🔐 רק אדמין מוסיף
     openAddTaskModal(status) {
+      if (!this.isAdmin) return;
+
       this.newTaskStatus = status;
       this.showAddModal = true;
     },
 
     createTask(task) {
+      if (!this.isAdmin) return;
+
       task.status = this.newTaskStatus;
       this.addTask(task);
       this.showAddModal = false;
@@ -191,8 +225,6 @@ export default {
     radial-gradient(circle at top left, #eef4ff 0%, transparent 30%),
     radial-gradient(circle at top right, #fff1dd 0%, transparent 26%),
     linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  box-sizing: border-box;
 }
 
 .page-header {
@@ -205,26 +237,15 @@ export default {
   flex-wrap: wrap;
 }
 
-.eyebrow {
-  margin: 0 0 0.375rem;
-  color: #5b6b82;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
 .page-title {
   margin: 0;
-  font-size: 2.375rem;
+  font-size: 2.3rem;
   font-weight: 800;
-  color: #1f2a44;
 }
 
 .page-subtitle {
-  margin: 0.5rem 0 0;
+  margin-top: 0.5rem;
   color: #6b7280;
-  font-size: 0.9375rem;
 }
 
 .summary-cards {
@@ -235,25 +256,10 @@ export default {
 
 .summary-card {
   min-width: 7.5rem;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid #e6ebf2;
-  border-radius: 1.125rem;
-  padding: 0.875rem 1.125rem;
-  box-shadow: 0 0.625rem 1.625rem rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(8px);
-}
-
-.summary-label {
-  display: block;
-  font-size: 0.75rem;
-  color: #7b8794;
-  margin-bottom: 0.5rem;
-  font-weight: 700;
-}
-
-.summary-card strong {
-  font-size: 1.625rem;
-  color: #172033;
+  background: white;
+  border-radius: 1rem;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
 .board {
@@ -262,7 +268,6 @@ export default {
   display: flex;
   gap: 1.3rem;
   justify-content: center;
-  align-items: flex-start;
   flex-wrap: wrap;
 }
 </style>

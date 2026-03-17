@@ -1,6 +1,7 @@
 <template>
-  <div class="overlay" @click.self="$emit('close')">
+  <div class="overlay" @click.self="handleClose">
     <div class="modal" role="dialog" aria-modal="true">
+      <!-- HEADER -->
       <div class="modal-header">
         <div>
           <p class="modal-eyebrow">
@@ -17,62 +18,49 @@
             class="status-pill"
             :class="localTask.status"
           >
-            {{ prettyStatus(localTask.status) }}
+            {{ statusLabel }}
           </span>
 
           <button
             v-if="isEditMode"
             class="icon-btn delete-btn"
             type="button"
-            @click="$emit('delete', localTask.id)"
-            aria-label="Delete task"
+            @click="handleDelete"
           >
             🗑
           </button>
 
-          <button
-            v-else
-            class="icon-btn"
-            type="button"
-            @click="$emit('close')"
-            aria-label="Close"
-          >
+          <button class="icon-btn" type="button" @click="handleClose">
             ✕
           </button>
         </div>
       </div>
 
+      <!-- BODY -->
       <div class="modal-body">
         <div class="field">
-          <label class="label" for="taskTitle">Task Title</label>
+          <label class="label">Task Title</label>
           <input
-            id="taskTitle"
             class="input"
             type="text"
-            placeholder="e.g. Design homepage"
             v-model.trim="localTask.title"
+            placeholder="e.g. Design homepage"
           />
         </div>
 
         <div class="field">
-          <label class="label" for="taskDesc">Description</label>
+          <label class="label">Description</label>
           <textarea
-            id="taskDesc"
             class="textarea"
-            rows="4"
-            placeholder="Write short task details"
             v-model.trim="localTask.description"
+            placeholder="Write task details"
           />
         </div>
 
         <div class="grid">
           <div class="field">
-            <label class="label" for="assignedTo">Assigned To</label>
-            <select
-              id="assignedTo"
-              class="select"
-              v-model="localTask.assignedTo"
-            >
+            <label class="label">Assigned To</label>
+            <select class="select" v-model="localTask.assignedTo">
               <option disabled value="">Select assignee</option>
               <option
                 v-for="user in users"
@@ -85,12 +73,8 @@
           </div>
 
           <div class="field">
-            <label class="label" for="status">Status</label>
-            <select
-              id="status"
-              class="select"
-              v-model="localTask.status"
-            >
+            <label class="label">Status</label>
+            <select class="select" v-model="localTask.status">
               <option value="todo">To Do</option>
               <option value="progress">In Progress</option>
               <option value="done">Done</option>
@@ -98,22 +82,25 @@
           </div>
         </div>
 
+        <!-- PREVIEW -->
         <div v-if="!isEditMode" class="preview-card">
           <p class="preview-label">Preview</p>
           <strong>{{ localTask.title || "Your task title" }}</strong>
-          <p>{{ localTask.description || "Task description will appear here" }}</p>
+          <p>
+            {{ localTask.description || "Task description will appear here" }}
+          </p>
         </div>
       </div>
 
+      <!-- FOOTER -->
       <div class="modal-footer">
-        <button class="btn btn-secondary" type="button" @click="$emit('close')">
+        <button class="btn btn-secondary" @click="handleClose">
           Cancel
         </button>
 
         <button
           class="btn btn-primary"
-          type="button"
-          :disabled="!canSubmit"
+          :disabled="!canSubmit || isSubmitting"
           @click="submitForm"
         >
           {{ isEditMode ? "Save Task" : "Create Task" }}
@@ -128,31 +115,17 @@ import { TASK_STATUS } from "../constants/taskStatus";
 
 export default {
   name: "TaskFormModal",
+
   props: {
-    mode: {
-      type: String,
-      required: true
-    },
-    task: {
-      type: Object,
-      default: null
-    },
-    users: {
-      type: Array,
-      default: () => []
-    }
+    mode: String,
+    task: Object,
+    users: Array
   },
 
   data() {
     return {
-      localTask: {
-        id: null,
-        title: "",
-        description: "",
-        assignedTo: "",
-        status: TASK_STATUS.TODO,
-        createdAt: new Date().toISOString()
-      }
+      localTask: this.getEmptyTask(),
+      isSubmitting: false
     };
   },
 
@@ -163,11 +136,19 @@ export default {
 
     canSubmit() {
       return (
-        this.localTask.title.trim().length > 0 &&
-        this.localTask.description.trim().length > 0 &&
-        this.localTask.assignedTo !== "" &&
-        this.localTask.status !== ""
+        this.localTask.title &&
+        this.localTask.description &&
+        this.localTask.assignedTo
       );
+    },
+
+    statusLabel() {
+      const map = {
+        todo: "To Do",
+        progress: "In Progress",
+        done: "Done"
+      };
+      return map[this.localTask.status];
     }
   },
 
@@ -176,25 +157,63 @@ export default {
       immediate: true,
       handler(newTask) {
         if (this.isEditMode && newTask) {
-          this.localTask = {
-            ...newTask
-          };
-        }
-      }
-    },
-
-    users: {
-      immediate: true,
-      handler(newUsers) {
-        if (!this.isEditMode && !this.localTask.assignedTo && newUsers.length > 0) {
-          this.localTask.assignedTo = newUsers[0].name;
+          this.localTask = { ...newTask };
+        } else {
+          this.resetForm();
         }
       }
     }
   },
 
+  mounted() {
+    window.addEventListener("keydown", this.handleEsc);
+  },
+
+  beforeUnmount() {
+    window.removeEventListener("keydown", this.handleEsc);
+  },
+
   methods: {
+    getEmptyTask() {
+      return {
+        id: null,
+        title: "",
+        description: "",
+        assignedTo: "",
+        status: TASK_STATUS.TODO,
+        createdAt: new Date().toISOString()
+      };
+    },
+
+    resetForm() {
+      this.localTask = this.getEmptyTask();
+
+      if (this.users?.length) {
+        this.localTask.assignedTo = this.users[0].name;
+      }
+    },
+
+    handleClose() {
+      this.$emit("close");
+    },
+
+    handleEsc(e) {
+      if (e.key === "Escape") {
+        this.handleClose();
+      }
+    },
+
+    handleDelete() {
+      if (confirm("Delete this task?")) {
+        this.$emit("delete", this.localTask.id);
+      }
+    },
+
     submitForm() {
+      if (!this.canSubmit) return;
+
+      this.isSubmitting = true;
+
       const taskToEmit = {
         ...this.localTask,
         id: this.isEditMode ? this.localTask.id : Date.now(),
@@ -204,13 +223,10 @@ export default {
       };
 
       this.$emit("save", taskToEmit);
-    },
 
-    prettyStatus(status) {
-      if (status === "todo") return "To Do";
-      if (status === "progress") return "In Progress";
-      if (status === "done") return "Done";
-      return status;
+      setTimeout(() => {
+        this.isSubmitting = false;
+      }, 300);
     }
   }
 };
