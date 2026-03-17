@@ -27,7 +27,6 @@ export default new Vuex.Store({
       );
 
       if (user) {
-        // לא שומרים password ב-currentUser
         const safeUser = {
           id: user.id,
           name: user.name,
@@ -111,7 +110,6 @@ export default new Vuex.Store({
       return state.tasks;
     },
 
-    // 🔥 חשוב — סינון לפי הרשאות
     visibleTasks(state) {
       if (!state.currentUser) return [];
 
