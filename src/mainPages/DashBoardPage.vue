@@ -16,6 +16,11 @@
       <span class="name">{{ member.name }}</span>
     </div>
   </div>
+  <div class="header-actions">
+        <button class="btn-primary-action" @click="showProjectModal = true">
+          <span class="plus-icon">+</span> New Project
+        </button>
+      </div>
 
     <div class="main-content">
     <div class="page-header">
@@ -25,11 +30,7 @@
         <p class="page-subtitle">Manage your work in a clean and visual way</p>
       </div>
 
-      <div class="header-actions">
-        <button class="btn-primary-action" @click="showProjectModal = true">
-          <span class="plus-icon">+</span> New Project
-        </button>
-      </div>
+      
       <div class="summary-cards">
         <div class="summary-card">
           <span class="summary-label">To Do</span>
@@ -306,16 +307,16 @@ export default {
 .layout {
   display: flex;
   min-height: 100vh;
+    background:
+    radial-gradient(circle at top left, #eef4ff 0%, transparent 30%),
+    radial-gradient(circle at top right, #fff1dd 0%, transparent 26%),
+    linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .main-content {
   flex: 1;
   padding: 2rem;
-  background:
-    radial-gradient(circle at top left, #eef4ff 0%, transparent 30%),
-    radial-gradient(circle at top right, #fff1dd 0%, transparent 26%),
-    linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .members {
@@ -408,16 +409,16 @@ export default {
 
 .btn-primary-action {
   position: fixed;
-  bottom: 2rem;
+  top: 0.7rem;
   right: 2rem; 
   z-index: 999;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: white;
   border: none;
-  padding: 0.85rem 1.5rem;
+  padding: 0.65rem 1.1rem;
   border-radius: 20px;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.87rem;
   cursor: pointer;
   display: flex;
   align-items: center;
