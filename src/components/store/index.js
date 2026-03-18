@@ -116,7 +116,6 @@ export default new Vuex.Store({
       if (state.currentUser.role === "admin") {
         return state.tasks;
       }
-
       return state.tasks.filter(
         (task) =>
           task.assignedTo === state.currentUser.name &&
