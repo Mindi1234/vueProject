@@ -73,11 +73,11 @@
               class="select"
               v-model="localTask.assignedTo"
             >
-              <option disabled value="">Select assignee</option>
+              <option disabled :value="null">Select assignee</option>
               <option
                 v-for="user in users"
                 :key="user.id"
-                :value="user.name"
+                :value="user.id"
               >
                 {{ user.name }}
               </option>
@@ -149,9 +149,10 @@ export default {
         id: null,
         title: "",
         description: "",
-        assignedTo: "",
+        assignedTo: null,
         status: TASK_STATUS.TODO,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        projectId: null
       }
     };
   },
@@ -165,8 +166,8 @@ export default {
       return (
         this.localTask.title.trim().length > 0 &&
         this.localTask.description.trim().length > 0 &&
-        this.localTask.assignedTo !== "" &&
-        this.localTask.status !== ""
+        this.localTask.assignedTo !== null &&
+        this.localTask.status !== "" 
       );
     }
   },
@@ -187,7 +188,7 @@ export default {
       immediate: true,
       handler(newUsers) {
         if (!this.isEditMode && !this.localTask.assignedTo && newUsers.length > 0) {
-          this.localTask.assignedTo = newUsers[0].name;
+          this.localTask.assignedTo = newUsers[0].id;
         }
       }
     }
