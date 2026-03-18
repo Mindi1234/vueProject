@@ -31,8 +31,8 @@
 
         <div class="card-footer">
           <div class="assignee">
-            <div class="avatar">{{ getInitial(task.assignedTo) }}</div>
-            <span>{{ task.assignedTo || "Unknown" }}</span>
+            <div class="avatar">{{ getInitial(getUserName(task.assignedTo)) }}</div>
+            <span>{{ getUserName(task.assignedTo) || "Unknown" }}</span>
           </div>
         </div>
       </div>
@@ -55,7 +55,7 @@
 
 <script>
 import draggable from "vuedraggable";
-import { shortText, formatDate, getInitial } from "../utils/helpers";
+import { shortText, formatDate, getInitial,getUserName } from "../utils/helpers";
 
 export default {
   name: "TaskColumn",
@@ -90,13 +90,18 @@ export default {
       if (this.status === "progress") return "progress-pill";
       if (this.status === "done") return "done-pill";
       return "";
+    },
+
+    users() {
+      return this.$store.getters.getUsers
     }
   },
 
   methods: {
     shortText,
     formatDate,
-    getInitial
+    getInitial,
+    getUserName
   }
 };
 </script>

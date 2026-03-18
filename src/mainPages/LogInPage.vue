@@ -60,23 +60,24 @@ export default {
         loginUser() {
             this.errorMessage = '';
 
-           // console.log(`Attempting login with name: ${this.name} and password: ${this.password}`);
             if (this.name.trim() === '' || this.password.trim() === '') {
                 this.errorMessage = "Please enter username and password";
                 return;
             }
 
-            this.$store.commit('login',
-                {
-                    name: this.name,
-                    password: this.password,
-                });
+            const users = this.$store.getters.getUsers;
 
-                if(this.$store.getters.isLoggedIn){
-                     this.$router.push('/dashboard');
-                }else{
-                    this.errorMessage = "Incorrect email address and/or password.";
-                }
+            const user = users.find(
+                (u) => u.name === this.name &&
+                u.password === this.password
+            );
+
+              if (user) {
+                localStorage.setItem("currentUser", JSON.stringify(user));
+                this.$router.push('/dashboard');
+              } else {
+                this.errorMessage = "Incorrect email address and/or password.";
+              }
            
         },
     },

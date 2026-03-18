@@ -59,13 +59,17 @@
 
         <div class="grid">
           <div class="field">
-            <label class="label">Assigned To</label>
-            <select class="select" v-model="localTask.assignedTo">
+            <label class="label" for="assignedTo">Assigned To</label>
+            <select
+              id="assignedTo"
+              class="select"
+              v-model="localTask.assignedTo"
+            >
               <option disabled value="">Select assignee</option>
               <option
                 v-for="user in users"
                 :key="user.id"
-                :value="user.name"
+                :value="user.id"
               >
                 {{ user.name }}
               </option>
