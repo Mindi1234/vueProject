@@ -14,3 +14,8 @@ export function shortText(text) {
     if (!name) return "?";
     return name.charAt(0).toUpperCase();
   }
+
+  export function getUserName(userId) {
+    const user = this.users.find(u => u.id === userId)
+    return user ? user.name : "Unknown"
+  }

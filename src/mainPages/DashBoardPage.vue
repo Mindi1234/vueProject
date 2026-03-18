@@ -1,5 +1,23 @@
 <template>
-  <div class="page">
+  <div class="layout">
+    <SideBar @project-selected="updateProjectId"/>
+
+    <div v-if="currentProjectId && projectMembers.length" class="members">
+    <h4 class="members-title">Team</h4>
+
+    <div
+      v-for="member in projectMembers"
+      :key="member.id"
+      class="member"
+    >
+      <div class="avatar" :title="member.name">
+        {{ member.name.charAt(0).toUpperCase() }}
+      </div>
+      <span class="name">{{ member.name }}</span>
+    </div>
+  </div>
+
+    <div class="main-content">
     <div class="page-header">
       <div>
         <p class="eyebrow">Project Board</p>
@@ -7,6 +25,11 @@
         <p class="page-subtitle">Manage your work in a clean and visual way</p>
       </div>
 
+      <div class="header-actions">
+        <button class="btn-primary-action" @click="showProjectModal = true">
+          <span class="plus-icon">+</span> New Project
+        </button>
+      </div>
       <div class="summary-cards">
         <div class="summary-card">
           <span class="summary-label">To Do</span>
@@ -23,7 +46,16 @@
       </div>
     </div>
 
+    
+
     <div class="board">
+
+      <CreateProject
+        v-if="showProjectModal"
+        :visible="showProjectModal"
+        @close="showProjectModal = false"
+        />
+
       <TaskColumn
         title="To Do"
         :status="TASK_STATUS.TODO"
@@ -79,14 +111,17 @@
       @confirm="confirmDeleteTask"
       @close="closeDeleteConfirm"
     />
+    </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
-import TaskColumn from "./TaskColumn.vue";
-import BaseConfirmModal from "./BaseConfirmModal.vue";
-import TaskFormModal from "./TaskFormModal.vue";
+import CreateProject from "../components/CreateProject.vue";
+import TaskColumn from "../components/TaskColumn.vue";
+import BaseConfirmModal from "../components/BaseConfirmModal.vue";
+import TaskFormModal from "../components/TaskFormModal.vue";
+import SideBar from "../components/SideBar.vue";
 import { TASK_STATUS } from "../constants/taskStatus";
 
 export default {
@@ -94,7 +129,9 @@ export default {
   components: {
     TaskColumn,
     BaseConfirmModal,
-    TaskFormModal
+    TaskFormModal,
+    CreateProject,
+    SideBar
   },
 
   data() {
@@ -103,22 +140,75 @@ export default {
       selectedTask: null,
       showModal: false,
       showAddModal: false,
+      showProjectModal: false,
       showDeleteConfirm: false,
       taskToDeleteId: null,
-      newTaskStatus: TASK_STATUS.TODO
+      newTaskStatus: TASK_STATUS.TODO,
+      currentProjectId: Number(localStorage.getItem("currentProjectId")) || null
     };
   },
 
   computed: {
     ...mapGetters([
-      "todoTasks",
-      "inProgressTasks",
-      "doneTasks",
       "getUsers"
-    ])
+    ]),
+
+    projectMembers(){
+      if(!this.currentProjectId) return [];
+      const currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
+
+      const project = this.$store.state.projects.find(
+        p => p.id === this.currentProjectId
+      );
+
+      if (!project) return [];
+
+      return project.members
+      .filter(id => id !== currentUser.id)
+      .map(id => this.$store.state.users.find(u => u.id === id))
+      .filter(Boolean);
+    },
+
+    filteredTasks() {
+      if(!this.currentProjectId){
+        return this.$store.state.tasks.filter(
+        task => task.projectId === null
+      );
+      }
+      console.log("currentProjectId:", this.currentProjectId);
+      return this.$store.state.tasks.filter(
+        task => task.projectId === this.currentProjectId
+      );
+    },
+
+    todoTasks() {
+      console.log("Filtering tasks for project ID:", this.currentProjectId);
+      return this.filteredTasks.filter(
+        task => task.status === this.TASK_STATUS.TODO
+      );
+    },
+
+    inProgressTasks() {
+      return this.filteredTasks.filter(
+        task => task.status === this.TASK_STATUS.PROGRESS
+      );
+    },
+
+    doneTasks() {
+      return this.filteredTasks.filter(
+        task => task.status === this.TASK_STATUS.DONE
+      );
+    },
+
+    
   },
 
   methods: {
+
+    updateProjectId(id) {
+      this.currentProjectId = id;
+      localStorage.setItem("currentProjectId", id);
+    },
 
     ondragEnd(event, newStatus) {
       if (event.added) {
@@ -197,7 +287,8 @@ export default {
           description: task.description || "",
           status: task.status,
           assignedTo: task.assignedTo || "",
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          projectId: this.currentProjectId || null
         };
 
         const tasks = [...this.$store.state.tasks, newTask];
@@ -211,15 +302,70 @@ export default {
 </script>
 
 <style scoped>
-.page {
+
+.layout {
+  display: flex;
   min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
   padding: 2rem;
   background:
     radial-gradient(circle at top left, #eef4ff 0%, transparent 30%),
     radial-gradient(circle at top right, #fff1dd 0%, transparent 26%),
     linear-gradient(180deg, #f7f9fc 0%, #eef2f7 100%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  box-sizing: border-box;
+}
+
+.members {
+  width: 7rem;
+  padding: 1rem;
+  margin: 1rem;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid #e6ebf2;
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  height: fit-content;
+}
+
+.members-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #7b8794;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.member {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background 0.2s;
+}
+
+.member:hover {
+  background: #eef4ff;
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.name {
+  font-size: 0.85rem;
+  color: #1f2a44;
 }
 
 .page-header {
@@ -252,6 +398,43 @@ export default {
   margin: 0.5rem 0 0;
   color: #6b7280;
   font-size: 0.9375rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: left;
+  gap: 1.5rem;
+}
+
+.btn-primary-action {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem; 
+  z-index: 999;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  padding: 0.85rem 1.5rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.plus-icon {
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 .summary-cards {
@@ -291,5 +474,25 @@ export default {
   justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .header-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    width: 100%;
+  }
+
+   .members {
+    display: none;
+  }
 }
 </style>
