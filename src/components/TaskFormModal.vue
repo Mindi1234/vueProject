@@ -36,7 +36,6 @@
         </div>
       </div>
 
-      <!-- BODY -->
       <div class="modal-body">
         <div class="field">
           <label class="label">Task Title</label>
@@ -86,7 +85,6 @@
           </div>
         </div>
 
-        <!-- PREVIEW -->
         <div v-if="!isEditMode" class="preview-card">
           <p class="preview-label">Preview</p>
           <strong>{{ localTask.title || "Your task title" }}</strong>
@@ -96,7 +94,6 @@
         </div>
       </div>
 
-      <!-- FOOTER -->
       <div class="modal-footer">
         <button class="btn btn-secondary" @click="handleClose">
           Cancel
