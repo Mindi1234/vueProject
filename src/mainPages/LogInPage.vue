@@ -17,7 +17,7 @@
             @input="errorMessage=''"
             @keyup.enter="loginUser"
             type="text"
-            placeholder="Enter email address" />
+            placeholder="Enter name" />
         </div>
 
         <div class="form-group">
