@@ -5,11 +5,11 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
     state: {
-        users: [
-            { id: 1, name: "Alice", password: "password1" },
-            { id: 2, name: "Eden", password: "1234@" },
-            { id: 3, name: "Shira", password: "shira12$" },
-        ],
+      users: [
+        { id: 1, name: "Alice", password: "password1", role: "admin" },
+        { id: 2, name: "Eden", password: "1234@", role: "user" },
+        { id: 3, name: "Shira", password: "shira12$", role: "user" }
+      ],
         tasks: JSON.parse(localStorage.getItem("tasks")) ||[
         { id: 1, title: "h.w.", description: "do homework in math", status: 'todo', assignedTo: 1, projectId: 1 },
         { id: 2, title: "clean", description: "do the dishes", status: 'progress', assignedTo: 3, projectId: null },

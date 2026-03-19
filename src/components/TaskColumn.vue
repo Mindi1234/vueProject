@@ -11,7 +11,6 @@
     <draggable
       :list="tasks"
       group="tasks"
-      :disabled="!isAdmin"
       @change="event => $emit('drag-change', event, status)"
       class="task-list"
     >
@@ -77,11 +76,11 @@ export default {
       type: Array,
       default: () => []
     },
-    // 👇 חדש
-    isAdmin: {
-      type: Boolean,
-      default: false
-    }
+    // // 👇 חדש
+    // isAdmin: {
+    //   type: Boolean,
+    //   default: false
+    // }
   },
 
   computed: {

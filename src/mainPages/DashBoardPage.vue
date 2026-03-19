@@ -61,6 +61,7 @@
         title="To Do"
         :status="TASK_STATUS.TODO"
         :tasks="todoTasks"
+        :isAdmin="isAdmin"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
         @add-task="openAddTaskModal"
@@ -90,6 +91,7 @@
       mode="edit"
       :task="selectedTask"
       :users="getUsers"
+      :isAdmin="isAdmin"
       @close="closeModal"
       @save="saveTask"
       @delete="deleteTask"
@@ -99,6 +101,7 @@
       v-if="showAddModal"
       mode="create"
       :users="getUsers"
+      :isAdmin="isAdmin"
       @close="showAddModal = false"
       @save="createTask"
     />
@@ -153,6 +156,11 @@ export default {
     ...mapGetters([
       "getUsers"
     ]),
+
+    isAdmin() {
+     const user = JSON.parse(localStorage.getItem("currentUser"));
+     return user?.role === "admin"
+    },
 
     projectMembers(){
       if(!this.currentProjectId) return [];
@@ -229,6 +237,11 @@ export default {
     },
 
     openTaskDetails(task) {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+      if (!this.isAdmin && task.assignedTo !== currentUser.id) {
+        return;
+      }
       this.selectedTask = { ...task };
       this.showModal = true;
     },
@@ -239,6 +252,11 @@ export default {
     },
 
     saveTask(updatedTask) {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+
+        if (!this.isAdmin && updatedTask.assignedTo !== currentUser.id) {
+          return;
+        }
         const tasks = [...this.$store.state.tasks];
 
           const index = tasks.findIndex(t => t.id === updatedTask.id);
@@ -251,6 +269,8 @@ export default {
     },
 
     deleteTask(taskId) {
+      if (!this.isAdmin) return;
+
        const tasks = this.$store.state.tasks.filter(
           task => task.id !== taskId);
        this.$store.commit("setTasks", tasks);
@@ -275,11 +295,14 @@ export default {
     },
 
     openAddTaskModal(status) {
+      if (!this.isAdmin) return;
       this.newTaskStatus = status;
       this.showAddModal = true;
     },
 
     createTask(task) {
+      if (!this.isAdmin) return;
+
        task.status = this.newTaskStatus;
 
         const newTask = {
@@ -409,7 +432,7 @@ export default {
 
 .btn-primary-action {
   position: fixed;
-  top: 0.7rem;
+  top: 0.rem;
   right: 2rem; 
   z-index: 999;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
