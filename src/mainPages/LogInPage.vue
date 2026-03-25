@@ -1,5 +1,5 @@
 <template>
-<div class="jira-login-container">
+  <div class="jira-login-container">
     <div class="background-illustration left"></div>
     <div class="background-illustration right"></div>
 
@@ -7,17 +7,24 @@
       <div class="logo">
         <span class="logo-text">Jira</span>
       </div>
-    <div class="login-card">
-        <h2>Log in to your account</h2>
 
-          <div class="form-group">
+      <div class="login-card">
+        <h2>{{ isRegister ? 'Create account' : 'Log in to your account' }}</h2>
+
+        <!-- toggle -->
+        <div class="switch-mode">
+          <span @click="isRegister=false" :class="{active: !isRegister}">Login</span>
+          <span @click="isRegister=true" :class="{active: isRegister}">Register</span>
+        </div>
+
+        <div class="form-group">
           <input
             v-model="name"
             :class="{ 'error-input': errorMessage }"
             @input="errorMessage=''"
-            @keyup.enter="loginUser"
             type="text"
-            placeholder="Enter name" />
+            placeholder="Enter name"
+          />
         </div>
 
         <div class="form-group">
@@ -25,20 +32,35 @@
             v-model="password"
             :class="{ 'error-input': errorMessage }"
             @input="errorMessage=''"
-            @keyup.enter="loginUser"
             type="password"
-            placeholder="Enter password" />
+            placeholder="Enter password"
+          />
+        </div>
+
+        <!-- role (רק בהרשמה) -->
+        <div v-if="isRegister" class="form-group">
+          <select v-model="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
         </div>
 
         <p v-if="errorMessage" class="error-message">
-          <span class="error-icon">!</span> {{ errorMessage }}
+          <span class="error-icon">!</span>
+          {{ errorMessage }}
         </p>
 
-        <button class="primary-btn" @click="loginUser">Log in</button>
-    </div>
+        <button class="primary-btn"
+          @click="isRegister ? registerUser() : loginUser()">
+          {{ isRegister ? 'Register' : 'Log in' }}
+        </button>
+      </div>
 
-    <div class="atlassian-footer">
-        <p>Want to learn more about our software? <a href="https://www.atlassian.com/software">more</a>.</p>
+      <div class="atlassian-footer">
+        <p>
+          Want to learn more about our software?
+          <a href="https://www.atlassian.com/software">more</a>.
+        </p>
       </div>
     </div>
   </div>
@@ -46,46 +68,74 @@
 
 <script>
 export default {
-    name: 'LogInPage',
+  name: 'LogInPage',
+  data() {
+    return {
+      name: '',
+      password: '',
+      role: 'user',
+      isRegister: false,
+      errorMessage: ''
+    };
+  },
+  methods: {
+    loginUser() {
+      this.errorMessage = '';
 
-    data() {
-        return {
-            name: '',
-            password: '',
-            errorMessage: ''
-        };
+      if (!this.name.trim() || !this.password.trim()) {
+        this.errorMessage = "Please enter username and password";
+        return;
+      }
+
+      const users = this.$store.getters.getUsers;
+
+      const user = users.find(
+        (u) => u.name === this.name && u.password === this.password
+      );
+
+      if (user) {
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        this.$router.push('/dashboard');
+      } else {
+        this.errorMessage = "Incorrect username or password";
+      }
     },
 
-    methods: {
-        loginUser() {
-            this.errorMessage = '';
+    registerUser() {
+      this.errorMessage = '';
 
-            if (this.name.trim() === '' || this.password.trim() === '') {
-                this.errorMessage = "Please enter username and password";
-                return;
-            }
+      if (!this.name.trim() || !this.password.trim()) {
+        this.errorMessage = "All fields are required";
+        return;
+      }
 
-            const users = this.$store.getters.getUsers;
+      const users = this.$store.getters.getUsers;
 
-            const user = users.find(
-                (u) => u.name === this.name &&
-                u.password === this.password
-            );
+      const exists = users.find((u) => u.name === this.name);
 
-              if (user) {
-                localStorage.setItem("currentUser", JSON.stringify(user));
-                this.$router.push('/dashboard');
-              } else {
-                this.errorMessage = "Incorrect email address and/or password.";
-              }
-           
-        },
-    },
+      if (exists) {
+        this.errorMessage = "User already exists";
+        return;
+      }
+
+      const newUser = {
+        id: Date.now(),
+        name: this.name,
+        password: this.password,
+        role: this.role
+      };
+
+      this.$store.commit('ADD_USER', newUser);
+
+      localStorage.setItem("currentUser", JSON.stringify(newUser));
+
+      this.$router.push('/dashboard');
+    }
+  }
 };
 </script>
 
 <style scoped>
-
 .jira-login-container {
   min-height: 100vh;
   display: flex;
@@ -93,7 +143,8 @@ export default {
   align-items: flex-start;
   padding-top: 80px;
   background-color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   color: #172B4D;
   overflow: hidden;
   position: relative;
@@ -117,25 +168,41 @@ h2 {
   font-size: 16px;
   font-weight: 600;
   color: #5E6C84;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
+}
+
+.switch-mode {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.switch-mode span {
+  color: #5E6C84;
+}
+
+.switch-mode .active {
+  color: #0052CC;
+  font-weight: bold;
 }
 
 .form-group {
   margin-bottom: 16px;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 8px 12px;
   font-size: 14px;
   background-color: #FAFBFC;
   border: 2px solid #DFE1E6;
   border-radius: 3px;
-  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
   box-sizing: border-box;
 }
 
-input:focus {
+input:focus, select:focus {
   outline: none;
   background-color: #ffffff;
   border-color: #4C9AFF;
@@ -156,7 +223,6 @@ input.error-input {
   font-weight: bold;
   cursor: pointer;
   margin-top: 8px;
-  transition: background 0.1s ease;
 }
 
 .primary-btn:hover {
@@ -186,36 +252,13 @@ input.error-input {
 }
 
 .logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin-bottom: 40px;
-  gap: 8px;
 }
 
 .logo-text {
   font-size: 32px;
   font-weight: 800;
   color: #0052CC;
-}
-
-.footer-links {
-  margin-top: 24px;
-  font-size: 14px;
-}
-
-.footer-links a, .atlassian-footer a {
-  color: #0052CC;
-  text-decoration: none;
-}
-
-.footer-links a:hover {
-  text-decoration: underline;
-}
-
-.dot {
-  margin: 0 8px;
-  color: #5E6C84;
 }
 
 .atlassian-footer {
@@ -232,25 +275,16 @@ input.error-input {
   background-size: contain;
   background-repeat: no-repeat;
   z-index: 1;
-  pointer-events: none;
-  animation: fadeIn 1s ease-out;
 }
 
 .left {
   left: 20px;
   background-image: url('../assets/left-illustration.svg');
-  background-position: left center;
 }
 
 .right {
   right: 20px;
   background-image: url('../assets/right-illustration.svg');
-  background-position: right center;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 1024px) {

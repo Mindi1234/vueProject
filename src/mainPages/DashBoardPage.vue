@@ -56,7 +56,6 @@
         :visible="showProjectModal"
         @close="showProjectModal = false"
         />
-
       <TaskColumn
         title="To Do"
         :status="TASK_STATUS.TODO"
@@ -71,6 +70,7 @@
         title="In Progress"
         :status="TASK_STATUS.PROGRESS"
         :tasks="inProgressTasks"
+        :isAdmin="isAdmin"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
         @add-task="openAddTaskModal"
@@ -80,6 +80,7 @@
         title="Done"
         :status="TASK_STATUS.DONE"
         :tasks="doneTasks"
+        :isAdmin="isAdmin"
         @drag-change="ondragEnd"
         @open-task="openTaskDetails"
         @add-task="openAddTaskModal"
@@ -154,7 +155,9 @@ export default {
 
   computed: {
     ...mapGetters([
-      "getUsers"
+        "getTasks",
+        "getProjects",
+        "getUsers"
     ]),
 
     isAdmin() {
@@ -166,7 +169,7 @@ export default {
       if(!this.currentProjectId) return [];
       const currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
-      const project = this.$store.state.projects.find(
+      const project = this.getProjects.find(
         p => p.id === this.currentProjectId
       );
 
@@ -174,37 +177,40 @@ export default {
 
       return project.members
       .filter(id => id !== currentUser.id)
-      .map(id => this.$store.state.users.find(u => u.id === id))
-      .filter(Boolean);
+      .map(id => this.getUsers.find(u => u.id === id))
     },
 
     filteredTasks() {
-      if(!this.currentProjectId){
-        return this.$store.state.tasks.filter(
-        task => task.projectId === null
-      );
-      }
-      console.log("currentProjectId:", this.currentProjectId);
-      return this.$store.state.tasks.filter(
-        task => task.projectId === this.currentProjectId
-      );
+        if (!this.currentProjectId) {
+          return this.getTasks.filter(task => task.projectId === null);
+        }
+
+        return this.getTasks.filter(
+          task => task.projectId === this.currentProjectId
+        );
     },
 
+      tasksWithPriority() {
+        return this.filteredTasks.map(task => ({
+          ...task,
+          priority: this.$store.getters.taskWithPriority(task)
+        }));
+      },
+
     todoTasks() {
-      console.log("Filtering tasks for project ID:", this.currentProjectId);
-      return this.filteredTasks.filter(
+      return this.tasksWithPriority.filter(
         task => task.status === this.TASK_STATUS.TODO
       );
     },
 
     inProgressTasks() {
-      return this.filteredTasks.filter(
+      return this.tasksWithPriority.filter(
         task => task.status === this.TASK_STATUS.PROGRESS
       );
     },
 
     doneTasks() {
-      return this.filteredTasks.filter(
+      return this.tasksWithPriority.filter(
         task => task.status === this.TASK_STATUS.DONE
       );
     },
@@ -223,17 +229,11 @@ export default {
       if (event.added) {
         const task = event.added.element;
 
-      const tasks = [...this.$store.state.tasks];
-      const taskForMove = tasks.find((t) => t.id === task.id);
-      if (taskForMove) {
-        taskForMove.status = newStatus;
-      }
-      this.$store.commit("setTasks", tasks);
-
-          localStorage.setItem(
-            "tasks",
-            JSON.stringify(this.$store.state.tasks));
-      }
+      this.$store.commit("updateTaskStatus", {
+      taskId: task.id,
+      status: newStatus
+    });
+  }
     },
 
     openTaskDetails(task) {
@@ -242,7 +242,10 @@ export default {
       if (!this.isAdmin && task.assignedTo !== currentUser.id) {
         return;
       }
-      this.selectedTask = { ...task };
+      this.selectedTask = {
+        ...task,
+        priority: this.$store.getters.taskWithPriority(task)
+      };
       this.showModal = true;
     },
 
@@ -257,28 +260,15 @@ export default {
         if (!this.isAdmin && updatedTask.assignedTo !== currentUser.id) {
           return;
         }
-        const tasks = [...this.$store.state.tasks];
-
-          const index = tasks.findIndex(t => t.id === updatedTask.id);
-          if (index !== -1) {
-            tasks.splice(index, 1, updatedTask);
-          }
-          this.$store.commit("setTasks", tasks);
-          localStorage.setItem("tasks", JSON.stringify(tasks));
-          this.showModal = false;
+       this.$store.commit("updateTask", updatedTask);
+       this.showModal = false;
     },
 
     deleteTask(taskId) {
       if (!this.isAdmin) return;
 
-       const tasks = this.$store.state.tasks.filter(
-          task => task.id !== taskId);
-       this.$store.commit("setTasks", tasks);
-       localStorage.setItem(
-        "tasks",
-        JSON.stringify(tasks));
-
-      this.showDeleteConfirm = true;
+       this.$store.commit("deleteTask", taskId);
+       this.showDeleteConfirm = true;
     },
 
     confirmDeleteTask() {
@@ -310,15 +300,12 @@ export default {
           title: task.title,
           description: task.description || "",
           status: task.status,
-          assignedTo: task.assignedTo || "",
+          assignedTo: task.assignedTo || null,
           createdAt: new Date().toISOString(),
           projectId: this.currentProjectId || null
         };
 
-        const tasks = [...this.$store.state.tasks, newTask];
-        this.$store.commit("setTasks", tasks);
-        localStorage.setItem("tasks", JSON.stringify(tasks));
-
+        this.$store.commit("addTask", newTask);
         this.showAddModal = false;
     }
   }
