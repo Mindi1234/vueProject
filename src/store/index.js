@@ -12,8 +12,8 @@ export default new Vuex.Store({
       ],
         tasks: JSON.parse(localStorage.getItem("tasks")) ||[
         { id: 1, title: "h.w.", description: "do homework in math", status: 'todo', assignedTo: 1, projectId: 1, createdAt: new Date().toISOString(), dueDate: "2026-03-31" },
-        { id: 2, title: "clean", description: "do the dishes", status: 'progress', assignedTo: 3, projectId: null, createdAt: new Date().toISOString(), dueDate: "2026-03-30" },
-        { id: 3, title: "bake", description: "make chocklete chips cookies", status: 'todo', assignedTo: 2, projectId: null, createdAt: new Date().toISOString(), dueDate: "2026-03-29" },
+        { id: 2, title: "clean", description: "do the dishes", status: 'progress', assignedTo: 3, projectId: 2, createdAt: new Date().toISOString(), dueDate: "2026-03-30" },
+        { id: 3, title: "bake", description: "make chocklete chips cookies", status: 'todo', assignedTo: 2, projectId: 2, createdAt: new Date().toISOString(), dueDate: "2026-03-29" },
         ],
         projects: [
             { id: 1, name: "Project A", description: "Description of Project A", ownerId: 1, members: [1,2] },

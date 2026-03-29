@@ -137,7 +137,6 @@ export default {
   props: {
     mode: String,
     task: Object,
-    // users: Array,
     isAdmin: {
     type: Boolean,
     default: false
@@ -166,7 +165,8 @@ export default {
       return (
         this.localTask.title &&
         this.localTask.description &&
-        this.localTask.assignedTo
+        this.localTask.assignedTo &&
+        this.localTask.dueDate
       );
     },
 
@@ -181,8 +181,6 @@ export default {
 
     projectMembers(){
       if(!this.currentProjectId) return [];
-      const currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
-
       const project = this.getProjects.find(
         p => p.id === this.currentProjectId
       );
@@ -190,9 +188,7 @@ export default {
       if (!project) return [];
 
       return project.members
-      .filter(id => id !== currentUser.id)
-      .map(id => this.getUsers.find(u => u.id === id))
-      .filter(Boolean);
+      .map(id => this.getUsers.find(u => u.id === id));
     },
   },
 
@@ -201,7 +197,9 @@ export default {
       immediate: true,
       handler(newTask) {
         if (this.isEditMode && newTask) {
-          this.localTask = { ...newTask };
+          this.localTask =  {...newTask ,
+          dueDate: newTask.dueDate ?
+           newTask.dueDate.split("T")[0] : null };
         } else {
           this.resetForm();
         }
@@ -265,7 +263,9 @@ export default {
         createdAt: this.isEditMode
           ? this.localTask.createdAt
           : new Date().toISOString(),
-          dueDate: this.localTask.dueDate,
+          dueDate: this.localTask.dueDate
+            ? new Date(this.localTask.dueDate).toISOString()
+            : null
       };
 
       this.$emit("save", taskToEmit);
