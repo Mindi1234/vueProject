@@ -38,15 +38,13 @@ export default new Vuex.Store({
     },
 
     mutations: {
-        setUsers(state, users) {
-            state.users = users;
-        },
-        setTasks(state, tasks) {
-            state.tasks = tasks;
-        },
-        setProjects(state, projects) {
-            state.projects = projects;
-        }
+      setUsers(state, users) { state.users = users; },
+      setTasks(state, tasks) { state.tasks = tasks; },
+      setProjects(state, projects) { state.projects = projects; },
+    
+      ADD_USER(state, user) {
+        state.users.push(user);
+      }
   },
 
   getters: {
