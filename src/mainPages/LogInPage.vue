@@ -11,7 +11,6 @@
       <div class="login-card">
         <h2>{{ isRegister ? 'Create account' : 'Log in to your account' }}</h2>
 
-        <!-- toggle -->
         <div class="switch-mode">
           <span @click="isRegister=false" :class="{active: !isRegister}">Login</span>
           <span @click="isRegister=true" :class="{active: isRegister}">Register</span>
@@ -37,7 +36,6 @@
           />
         </div>
 
-        <!-- role (רק בהרשמה) -->
         <div v-if="isRegister" class="form-group">
           <select v-model="role">
             <option value="user">User</option>

@@ -19,3 +19,10 @@ export function shortText(text) {
     const user = this.users.find(u => u.id === userId)
     return user ? user.name : "Unknown"
   }
+
+  // export function validDate(date) {
+  //   if (!date) return true;
+  //   const today = new Date();
+  //   const d = new Date(date);
+  //   return d >= today;
+  // }
