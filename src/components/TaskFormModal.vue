@@ -1,7 +1,6 @@
 <template>
   <div class="overlay" @click.self="handleClose">
     <div class="modal" role="dialog" aria-modal="true">
-      <!-- HEADER -->
       <div class="modal-header">
         <div>
           <p class="modal-eyebrow">
@@ -19,6 +18,14 @@
             :class="localTask.status"
           >
             {{ statusLabel }}
+          </span>
+
+          <span
+            v-if="localTask.priority"
+            class="priority-pill"
+            :class="localTask.priority"
+          >
+            {{ localTask.priority }}
           </span>
 
           <button
@@ -56,6 +63,15 @@
           />
         </div>
 
+        <div class="field">
+          <label class="label">Due Date</label>
+          <input
+            class="input"
+            type="date"
+            v-model="localTask.dueDate"
+          />
+        </div>
+
         <div class="grid">
           <div class="field">
             <label class="label" for="assignedTo">Assigned To</label>
@@ -66,11 +82,11 @@
             >
               <option disabled value="">Select assignee</option>
               <option
-                v-for="user in users"
-                :key="user.id"
-                :value="user.id"
+                v-for="member in projectMembers"
+                :key="member.id"
+                :value="member.id"
               >
-                {{ user.name }}
+                {{ member.name }}
               </option>
             </select>
           </div>
@@ -113,6 +129,7 @@
 
 <script>
 import { TASK_STATUS } from "../constants/taskStatus";
+import { mapGetters  } from "vuex";
 
 export default {
   name: "TaskFormModal",
@@ -120,17 +137,26 @@ export default {
   props: {
     mode: String,
     task: Object,
-    users: Array
+    isAdmin: {
+    type: Boolean,
+    default: false
+  }
   },
 
   data() {
     return {
       localTask: this.getEmptyTask(),
-      isSubmitting: false
+      isSubmitting: false,
+      currentProjectId: Number(localStorage.getItem("currentProjectId")) || null
     };
   },
 
   computed: {
+      ...mapGetters([
+        "getUsers",
+        "getProjects"
+      ]),
+
     isEditMode() {
       return this.mode === "edit";
     },
@@ -139,7 +165,8 @@ export default {
       return (
         this.localTask.title &&
         this.localTask.description &&
-        this.localTask.assignedTo
+        this.localTask.assignedTo &&
+        this.localTask.dueDate
       );
     },
 
@@ -150,7 +177,19 @@ export default {
         done: "Done"
       };
       return map[this.localTask.status];
-    }
+    },
+
+    projectMembers(){
+      if(!this.currentProjectId) return [];
+      const project = this.getProjects.find(
+        p => p.id === this.currentProjectId
+      );
+
+      if (!project) return [];
+
+      return project.members
+      .map(id => this.getUsers.find(u => u.id === id));
+    },
   },
 
   watch: {
@@ -158,7 +197,9 @@ export default {
       immediate: true,
       handler(newTask) {
         if (this.isEditMode && newTask) {
-          this.localTask = { ...newTask };
+          this.localTask =  {...newTask ,
+          dueDate: newTask.dueDate ?
+           newTask.dueDate.split("T")[0] : null };
         } else {
           this.resetForm();
         }
@@ -182,15 +223,16 @@ export default {
         description: "",
         assignedTo: "",
         status: TASK_STATUS.TODO,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        dueDate: null,
       };
     },
 
     resetForm() {
       this.localTask = this.getEmptyTask();
 
-      if (this.users?.length) {
-        this.localTask.assignedTo = this.users[0].name;
+      if (this.getUsers?.length) {
+        this.localTask.assignedTo = this.getUsers[0].id;
       }
     },
 
@@ -220,7 +262,10 @@ export default {
         id: this.isEditMode ? this.localTask.id : Date.now(),
         createdAt: this.isEditMode
           ? this.localTask.createdAt
-          : new Date().toISOString()
+          : new Date().toISOString(),
+          dueDate: this.localTask.dueDate
+            ? new Date(this.localTask.dueDate).toISOString()
+            : null
       };
 
       this.$emit("save", taskToEmit);
@@ -284,6 +329,33 @@ export default {
   align-items: center;
   gap: 10px;
   flex-shrink: 0;
+}
+
+.priority-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+
+.priority-pill.high {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.priority-pill.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.priority-pill.low {
+  background: #dcfce7;
+  color: #166534;
 }
 
 .icon-btn {

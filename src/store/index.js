@@ -46,6 +46,30 @@ export default new Vuex.Store({
         },
         setProjects(state, projects) {
             state.projects = projects;
+        },
+        updateTaskStatus(state, { taskId, status }) {
+            const task = state.tasks.find(task => task.id === taskId);
+            if (task) {
+                task.status = status;
+                localStorage.setItem("tasks", JSON.stringify(state.tasks));
+            }
+        },
+        updateTask(state, updatedTask) {
+            const index = state.tasks.findIndex(task => task.id === updatedTask.id);
+            if (index !== -1) {
+                Vue.set(state.tasks, index, updatedTask);
+                localStorage.setItem("tasks", JSON.stringify(state.tasks));
+            }
+        },
+        addTask(state, newTask) {
+          state.tasks.push({
+            ...newTask,
+            createdAt: new Date().toISOString()
+          });            localStorage.setItem("tasks", JSON.stringify(state.tasks));
+        },
+        deleteTask(state, taskId) {
+            state.tasks = state.tasks.filter(task => task.id !== taskId);
+            localStorage.setItem("tasks", JSON.stringify(state.tasks));
         }
   },
 
@@ -85,6 +109,31 @@ export default new Vuex.Store({
 
     todoTasks(state) {
       return state.tasks.filter((task) => task.status === "todo");
+    },
+
+    taskWithPriority: () => (task) => {
+      if (task.status === "done") return null;
+      if (!task.dueDate || !task.createdAt) return 'low';
+    
+      const now = new Date();
+      const createdAt = new Date(task.createdAt);
+    
+      const due = new Date(task.dueDate);
+      due.setHours(23, 59, 59, 999);
+    
+      const totalTime = due - createdAt;
+    
+      if (totalTime <= 0) return 'high';
+    
+      const passed = now - createdAt;
+    
+      if (now > due) return 'high';
+    
+      const ratio = passed / totalTime;
+    
+      if (ratio < 0.33) return 'low';
+      if (ratio < 0.66) return 'medium';
+      return 'high';
     }
   }
 });

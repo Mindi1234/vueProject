@@ -21,7 +21,15 @@
         @click="$emit('open-task', task)"
       >
         <div class="card-top">
-          <span class="status-pill" :class="pillClass">{{ title }}</span>
+
+          <div class="left-section">
+            <span
+              v-if="task.priority"
+              class="priority-dot"
+              :class="task.priority"
+            ></span>
+            <span class="status-pill" :class="pillClass">{{ title }}</span>
+          </div>
           <span class="task-date">{{ formatDate(task.createdAt) }}</span>
         </div>
 
@@ -41,7 +49,7 @@
       </div>
     </draggable>
 
-    <!-- 🔐 רק אדמין רואה -->
+
     <button
       v-if="isAdmin"
       class="add-task-btn"
@@ -76,11 +84,11 @@ export default {
       type: Array,
       default: () => []
     },
-    // // 👇 חדש
-    // isAdmin: {
-    //   type: Boolean,
-    //   default: false
-    // }
+
+    isAdmin: {
+      type: Boolean,
+      default: false
+    }
   },
 
   computed: {
@@ -193,6 +201,34 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.priority-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.priority-dot.low {
+  background: #22c55e;
+}
+
+.priority-dot.medium {
+  background: #f59e0b;
+}
+
+.priority-dot.high {
+  background: #ef4444;
+}
+
+.priority-dot.high {
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.7);
 }
 
 .status-pill {
