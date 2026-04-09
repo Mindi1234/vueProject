@@ -3,119 +3,122 @@
     <SideBar @project-selected="updateProjectId"/>
 
     <div v-if="currentProjectId && projectMembers.length" class="members">
-    <h4 class="members-title">Team</h4>
-
-    <div
-      v-for="member in projectMembers"
-      :key="member.id"
-      class="member"
-    >
-      <div class="avatar" :title="member.name">
-        {{ member.name.charAt(0).toUpperCase() }}
+      <h4 class="members-title">Team</h4>
+      <div
+        v-for="member in projectMembers"
+        :key="member.id"
+        class="member"
+      >
+        <div class="avatar" :title="member.name">
+          {{ member.name.charAt(0).toUpperCase() }}
+        </div>
+        <span class="name">{{ member.name }}</span>
       </div>
-      <span class="name">{{ member.name }}</span>
     </div>
-  </div>
-  <div class="header-actions">
-        <button class="btn-primary-action" @click="showProjectModal = true">
-          <span class="plus-icon">+</span> New Project
-        </button>
-      </div>
+
+    <div v-if="isAdmin" class="header-actions">
+      <button class="btn-primary-action" @click="showProjectModal = true">
+        <span class="plus-icon">+</span> New Project
+      </button>
+    </div>
 
     <div class="main-content">
-    <div class="page-header">
-      <div>
-        <p class="eyebrow">Project Board</p>
-        <h1 class="page-title">Task Dashboard</h1>
-        <p class="page-subtitle">Manage your work in a clean and visual way</p>
+      <div class="page-header">
+        <div>
+          <p class="eyebrow">Project Board</p>
+          <h1 class="page-title">Task Dashboard</h1>
+          <p class="page-subtitle">Manage your work in a clean and visual way</p>
+
+          <input
+            v-model="search"
+            class="search-input"
+            placeholder="Search tasks..."
+          />
+        </div>
+
+        <div class="summary-cards">
+          <div class="summary-card">
+            <span class="summary-label">To Do</span>
+            <strong>{{ todoTasks.length }}</strong>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">In Progress</span>
+            <strong>{{ inProgressTasks.length }}</strong>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Done</span>
+            <strong>{{ doneTasks.length }}</strong>
+          </div>
+        </div>
       </div>
 
-      
-      <div class="summary-cards">
-        <div class="summary-card">
-          <span class="summary-label">To Do</span>
-          <strong>{{ todoTasks.length }}</strong>
-        </div>
-        <div class="summary-card">
-          <span class="summary-label">In Progress</span>
-          <strong>{{ inProgressTasks.length }}</strong>
-        </div>
-        <div class="summary-card">
-          <span class="summary-label">Done</span>
-          <strong>{{ doneTasks.length }}</strong>
-        </div>
-      </div>
-    </div>
+     <TaskProgressChart :tasks="filteredTasks" />
 
-    
-
-    <div class="board">
-
-      <CreateProject
-        v-if="showProjectModal"
-        :visible="showProjectModal"
-        @close="showProjectModal = false"
+      <div class="board">
+        <CreateProject
+          v-if="showProjectModal && isAdmin"
+          :visible="showProjectModal"
+          @close="showProjectModal = false"
         />
-      <TaskColumn
-        title="To Do"
-        :status="TASK_STATUS.TODO"
-        :tasks="todoTasks"
+
+        <TaskColumn
+          title="To Do"
+          :status="TASK_STATUS.TODO"
+          :tasks="todoTasks"
+          :isAdmin="isAdmin"
+          @drag-change="ondragEnd"
+          @open-task="openTaskDetails"
+          @add-task="openAddTaskModal"
+        />
+
+        <TaskColumn
+          title="In Progress"
+          :status="TASK_STATUS.PROGRESS"
+          :tasks="inProgressTasks"
+          @drag-change="ondragEnd"
+          @open-task="openTaskDetails"
+          @add-task="openAddTaskModal"
+        />
+
+        <TaskColumn
+          title="Done"
+          :status="TASK_STATUS.DONE"
+          :tasks="doneTasks"
+          @drag-change="ondragEnd"
+          @open-task="openTaskDetails"
+          @add-task="openAddTaskModal"
+        />
+      </div>
+
+      <TaskFormModal
+        v-if="showModal"
+        mode="edit"
+        :task="selectedTask"
+        :users="getUsers"
         :isAdmin="isAdmin"
-        @drag-change="ondragEnd"
-        @open-task="openTaskDetails"
-        @add-task="openAddTaskModal"
+        @close="closeModal"
+        @save="saveTask"
+        @delete="deleteTask"
       />
 
-      <TaskColumn
-        title="In Progress"
-        :status="TASK_STATUS.PROGRESS"
-        :tasks="inProgressTasks"
+      <TaskFormModal
+        v-if="showAddModal"
+        mode="create"
+        :users="getUsers"
         :isAdmin="isAdmin"
-        @drag-change="ondragEnd"
-        @open-task="openTaskDetails"
-        @add-task="openAddTaskModal"
+        @close="showAddModal = false"
+        @save="createTask"
       />
 
-      <TaskColumn
-        title="Done"
-        :status="TASK_STATUS.DONE"
-        :tasks="doneTasks"
-        :isAdmin="isAdmin"
-        @drag-change="ondragEnd"
-        @open-task="openTaskDetails"
-        @add-task="openAddTaskModal"
+      <BaseConfirmModal
+        v-if="showDeleteConfirm"
+        title="Delete Task"
+        message="Are you sure you want to delete this task?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        @confirm="confirmDeleteTask"
+        @close="closeDeleteConfirm"
       />
-    </div>
-
-    <TaskFormModal
-      v-if="showModal"
-      mode="edit"
-      :task="selectedTask"
-      :users="getUsers"
-      :isAdmin="isAdmin"
-      @close="closeModal"
-      @save="saveTask"
-      @delete="deleteTask"
-    />
-
-    <TaskFormModal
-      v-if="showAddModal"
-      mode="create"
-      :users="getUsers"
-      :isAdmin="isAdmin"
-      @close="showAddModal = false"
-      @save="createTask"
-    />
-
-    <BaseConfirmModal
-      v-if="showDeleteConfirm"
-      title="Delete Task"
-      message="Are you sure you want to delete this task?"
-      confirmText="Delete"
-      cancelText="Cancel"
-      @confirm="confirmDeleteTask"
-      @close="closeDeleteConfirm"
-    />
     </div>
   </div>
 </template>
@@ -128,6 +131,8 @@ import BaseConfirmModal from "../components/BaseConfirmModal.vue";
 import TaskFormModal from "../components/TaskFormModal.vue";
 import SideBar from "../components/SideBar.vue";
 import { TASK_STATUS } from "../constants/taskStatus";
+import { filterTasks } from "../utils/taskFilter.ts"; 
+//import TaskProgressChart from "../components/TaskProgressChart.vue";
 
 export default {
   name: "DashBoardPage",
@@ -136,7 +141,8 @@ export default {
     BaseConfirmModal,
     TaskFormModal,
     CreateProject,
-    SideBar
+    SideBar,
+    TaskProgressChart
   },
 
   data() {
@@ -149,24 +155,21 @@ export default {
       showDeleteConfirm: false,
       taskToDeleteId: null,
       newTaskStatus: TASK_STATUS.TODO,
-      currentProjectId: Number(localStorage.getItem("currentProjectId")) || null
+      currentProjectId: Number(localStorage.getItem("currentProjectId")) || null,
+      search: "" 
     };
   },
 
   computed: {
-    ...mapGetters([
-        "getTasks",
-        "getProjects",
-        "getUsers"
-    ]),
+    ...mapGetters(["getUsers"]),
 
     isAdmin() {
-     const user = JSON.parse(localStorage.getItem("currentUser"));
-     return user?.role === "admin"
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      return user?.role === "admin";
     },
 
-    projectMembers(){
-      if(!this.currentProjectId) return [];
+    projectMembers() {
+      if (!this.currentProjectId) return [];
       const currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
       const project = this.getProjects.find(
@@ -176,18 +179,25 @@ export default {
       if (!project) return [];
 
       return project.members
-      .filter(id => id !== currentUser.id)
-      .map(id => this.getUsers.find(u => u.id === id))
+        .filter(id => id !== currentUser.id)
+        .map(id => this.$store.state.users.find(u => u.id === id))
+        .filter(Boolean);
     },
 
     filteredTasks() {
-        if (!this.currentProjectId) {
-          return this.getTasks.filter(task => task.projectId === null);
-        }
+      let tasks;
 
-        return this.getTasks.filter(
+      if (!this.currentProjectId) {
+        tasks = this.$store.state.tasks.filter(
+          task => task.projectId === null
+        );
+      } else {
+        tasks = this.$store.state.tasks.filter(
           task => task.projectId === this.currentProjectId
         );
+      }
+
+      return filterTasks(tasks, this.search);
     },
 
       tasksWithPriority() {
@@ -198,7 +208,7 @@ export default {
       },
 
     todoTasks() {
-      return this.tasksWithPriority.filter(
+      return this.filteredTasks.filter(
         task => task.status === this.TASK_STATUS.TODO
       );
     },
@@ -214,12 +224,9 @@ export default {
         task => task.status === this.TASK_STATUS.DONE
       );
     },
-
-    
   },
 
   methods: {
-
     updateProjectId(id) {
       this.currentProjectId = id;
       localStorage.setItem("currentProjectId", id);
@@ -228,24 +235,23 @@ export default {
     ondragEnd(event, newStatus) {
       if (event.added) {
         const task = event.added.element;
+        const tasks = [...this.$store.state.tasks];
 
-      this.$store.commit("updateTaskStatus", {
-      taskId: task.id,
-      status: newStatus
-    });
-  }
+        const taskForMove = tasks.find((t) => t.id === task.id);
+        if (taskForMove) {
+          taskForMove.status = newStatus;
+        }
+
+        this.$store.commit("setTasks", tasks);
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+      }
     },
 
     openTaskDetails(task) {
       const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (!this.isAdmin && task.assignedTo !== currentUser.id) return;
 
-      if (!this.isAdmin && task.assignedTo !== currentUser.id) {
-        return;
-      }
-      this.selectedTask = {
-        ...task,
-        priority: this.$store.getters.taskWithPriority(task)
-      };
+      this.selectedTask = { ...task };
       this.showModal = true;
     },
 
@@ -256,19 +262,25 @@ export default {
 
     saveTask(updatedTask) {
       const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (!this.isAdmin && updatedTask.assignedTo !== currentUser.id) return;
 
-        if (!this.isAdmin && updatedTask.assignedTo !== currentUser.id) {
-          return;
-        }
-       this.$store.commit("updateTask", updatedTask);
-       this.showModal = false;
+      const tasks = [...this.$store.state.tasks];
+      const index = tasks.findIndex(t => t.id === updatedTask.id);
+      if (index !== -1) tasks.splice(index, 1, updatedTask);
+
+      this.$store.commit("setTasks", tasks);
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+      this.showModal = false;
     },
 
     deleteTask(taskId) {
       if (!this.isAdmin) return;
 
-       this.$store.commit("deleteTask", taskId);
-       this.showDeleteConfirm = true;
+      const tasks = this.$store.state.tasks.filter(t => t.id !== taskId);
+      this.$store.commit("setTasks", tasks);
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+
+      this.showDeleteConfirm = true;
     },
 
     confirmDeleteTask() {
@@ -293,27 +305,43 @@ export default {
     createTask(task) {
       if (!this.isAdmin) return;
 
-       task.status = this.newTaskStatus;
+      task.status = this.newTaskStatus;
 
-        const newTask = {
-          id: Date.now(),
-          title: task.title,
-          description: task.description || "",
-          status: task.status,
-          assignedTo: task.assignedTo || null,
-          createdAt: new Date().toISOString(),
-          projectId: this.currentProjectId || null
-        };
+      const newTask = {
+        id: Date.now(),
+        title: task.title,
+        description: task.description || "",
+        status: task.status,
+        assignedTo: task.assignedTo || "",
+        createdAt: new Date().toISOString(),
+        projectId: this.currentProjectId || null
+      };
 
-        this.$store.commit("addTask", newTask);
-        this.showAddModal = false;
+      const tasks = [...this.$store.state.tasks, newTask];
+      this.$store.commit("setTasks", tasks);
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+
+      this.showAddModal = false;
     }
   }
 };
 </script>
 
-<style scoped>
 
+
+<style scoped>
+.search-input {
+  margin-top: 0.8rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #d1d9e6;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #2563eb;
+}
 .layout {
   display: flex;
   min-height: 100vh;

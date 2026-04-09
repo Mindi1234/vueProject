@@ -25,5 +25,8 @@ export default new Router({
             name: 'ProjectPage',
             component: ProjectPage,
         }
+        
     ]
-});
+    
+})
+;
