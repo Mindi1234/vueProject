@@ -83,6 +83,31 @@ export default new Vuex.Store({
 
     todoTasks(state) {
       return state.tasks.filter((task) => task.status === "todo");
+    },
+
+    taskWithPriority: () => (task) => {
+      if (task.status === "done") return null;
+      if (!task.dueDate || !task.createdAt) return 'low';
+    
+      const now = new Date();
+      const createdAt = new Date(task.createdAt);
+    
+      const due = new Date(task.dueDate);
+      due.setHours(23, 59, 59, 999);
+    
+      const totalTime = due - createdAt;
+    
+      if (totalTime <= 0) return 'high';
+    
+      const passed = now - createdAt;
+    
+      if (now > due) return 'high';
+    
+      const ratio = passed / totalTime;
+    
+      if (ratio < 0.33) return 'low';
+      if (ratio < 0.66) return 'medium';
+      return 'high';
     }
   }
 });

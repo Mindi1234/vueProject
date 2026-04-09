@@ -172,7 +172,7 @@ export default {
       if (!this.currentProjectId) return [];
       const currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
 
-      const project = this.$store.state.projects.find(
+      const project = this.getProjects.find(
         p => p.id === this.currentProjectId
       );
 
@@ -200,6 +200,13 @@ export default {
       return filterTasks(tasks, this.search);
     },
 
+      tasksWithPriority() {
+        return this.filteredTasks.map(task => ({
+          ...task,
+          priority: this.$store.getters.taskWithPriority(task)
+        }));
+      },
+
     todoTasks() {
       return this.filteredTasks.filter(
         task => task.status === this.TASK_STATUS.TODO
@@ -207,13 +214,13 @@ export default {
     },
 
     inProgressTasks() {
-      return this.filteredTasks.filter(
+      return this.tasksWithPriority.filter(
         task => task.status === this.TASK_STATUS.PROGRESS
       );
     },
 
     doneTasks() {
-      return this.filteredTasks.filter(
+      return this.tasksWithPriority.filter(
         task => task.status === this.TASK_STATUS.DONE
       );
     },
