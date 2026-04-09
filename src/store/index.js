@@ -38,39 +38,13 @@ export default new Vuex.Store({
     },
 
     mutations: {
-        setUsers(state, users) {
-            state.users = users;
-        },
-        setTasks(state, tasks) {
-            state.tasks = tasks;
-        },
-        setProjects(state, projects) {
-            state.projects = projects;
-        },
-        updateTaskStatus(state, { taskId, status }) {
-            const task = state.tasks.find(task => task.id === taskId);
-            if (task) {
-                task.status = status;
-                localStorage.setItem("tasks", JSON.stringify(state.tasks));
-            }
-        },
-        updateTask(state, updatedTask) {
-            const index = state.tasks.findIndex(task => task.id === updatedTask.id);
-            if (index !== -1) {
-                Vue.set(state.tasks, index, updatedTask);
-                localStorage.setItem("tasks", JSON.stringify(state.tasks));
-            }
-        },
-        addTask(state, newTask) {
-          state.tasks.push({
-            ...newTask,
-            createdAt: new Date().toISOString()
-          });            localStorage.setItem("tasks", JSON.stringify(state.tasks));
-        },
-        deleteTask(state, taskId) {
-            state.tasks = state.tasks.filter(task => task.id !== taskId);
-            localStorage.setItem("tasks", JSON.stringify(state.tasks));
-        }
+      setUsers(state, users) { state.users = users; },
+      setTasks(state, tasks) { state.tasks = tasks; },
+      setProjects(state, projects) { state.projects = projects; },
+    
+      ADD_USER(state, user) {
+        state.users.push(user);
+      }
   },
 
   getters: {
