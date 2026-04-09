@@ -15,7 +15,8 @@ export function shortText(text) {
     return name.charAt(0).toUpperCase();
   }
 
-  export function getUserName(userId) {
-    const user = this.users.find(u => u.id === userId)
-    return user ? user.name : "Unknown"
+  export function getUserName(userId, users) {
+    if (!users || !Array.isArray(users)) return "Unknown"; // מוודא שהמערך קיים
+    const user = users.find(u => u.id === userId);
+    return user ? user.name : "Unknown";
   }
